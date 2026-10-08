@@ -616,6 +616,64 @@ b {
   filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px var(--gold));
   animation: targetbob 0.7s ease-in-out infinite alternate;
 }
+.dmg-preview-slot {
+  position: absolute;
+  left: 0;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
+}
+.dmg-preview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  background: rgba(255, 248, 230, 0.96);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  padding: 1px 8px;
+  font-weight: 900;
+  font-size: 20px;
+  color: #c0261d;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+  animation: previewin 0.15s ease-out;
+}
+.dmg-preview.side-ally {
+  color: #8a2fb0;
+}
+.dmg-preview.lethal {
+  border-color: #c0261d;
+}
+.dmg-preview.random .n {
+  color: #6a5a8a;
+}
+.dmg-preview .blk {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 21px;
+  padding: 0 2px;
+  background: linear-gradient(#8cc8ff, #2f7fe0);
+  border: 2px solid #102a48;
+  border-radius: 5px 5px 10px 10px;
+  color: #fff;
+  font-size: 11px;
+}
+.dmg-preview .ko {
+  background: #c0261d;
+  color: #fff;
+  border-radius: 6px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+.dmg-preview .self {
+  font-size: 11px;
+  color: #8a2fb0;
+}
+@keyframes previewin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .unit.casting .sprite {
   filter: drop-shadow(0 0 12px #c58bff) brightness(1.3);
 }

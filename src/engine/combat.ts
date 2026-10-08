@@ -25,6 +25,18 @@ export interface EnemyStep {
 
 export type CombatKind = 'normal' | 'elite' | 'boss';
 
+/** What a previewed card play does to one unit. */
+export interface HitPreview {
+  /** HP lost (after block) */
+  dmg: number;
+  /** damage soaked by block */
+  blocked: number;
+  miss: boolean;
+  lethal: boolean;
+  /** the result depends on the RNG (random targets or rolls) */
+  random: boolean;
+}
+
 const DURATION: StatusId[] = ['shrunk', 'soft'];
 const STUN_IMMUNE_TRAITS = ['boss'];
 export const HAND_MAX = 10;
@@ -298,6 +310,46 @@ export class Combat {
     if (this.cost(inst) > this.fp) return 'Not enough FP';
     if (d.target === 'enemy' && this.targetsFor(inst).length === 0) return d.atk === 'hammer' || d.atk === 'ground' ? "Can't reach flying foes" : 'No target';
     return null;
+  }
+
+  /** A detached copy for previews: nothing done to it touches this combat or the run. */
+  clone(): Combat {
+    const { run, rng, ...rest } = this as Combat;
+    const c = Object.assign(Object.create(Combat.prototype) as Combat, structuredClone(rest));
+    c.run = structuredClone(run);
+    c.rng = new Rng(rng.state);
+    c.events = [];
+    return c;
+  }
+
+  /**
+   * What playing a hand card would do to each unit it hits, keyed by uid, or null if it can't be played.
+   * The play runs on copies with several RNG states, so random outcomes are flagged rather than guessed.
+   */
+  previewPlay(handIdx: number, targetUid: string | undefined, nice: boolean): Record<string, HitPreview> | null {
+    const runs: Record<string, HitPreview>[] = [];
+    for (const salt of [0, 0x9e3779b9, 0x85ebca6b, 0xc2b2ae35, 0x27d4eb2f, 0x165667b1]) {
+      const sim = this.clone();
+      sim.rng.state = (sim.rng.state ^ salt) >>> 0;
+      if (!sim.play(handIdx, targetUid, nice)) return null;
+      const hits: Record<string, HitPreview> = {};
+      for (const e of sim.events) {
+        if (e.t !== 'hit') continue;
+        const p = (hits[e.target] ??= { dmg: 0, blocked: 0, miss: false, lethal: false, random: false });
+        p.dmg += e.dmg;
+        p.blocked += e.blocked;
+        if (e.miss) p.miss = true;
+      }
+      for (const [uid, p] of Object.entries(hits)) p.lethal = !this.unit(uid)?.dead && !!sim.unit(uid)?.dead;
+      runs.push(hits);
+    }
+    const out: Record<string, HitPreview> = {};
+    for (const uid of new Set(runs.flatMap((r) => Object.keys(r)))) {
+      const first = JSON.stringify(runs[0][uid]);
+      out[uid] = runs[0][uid] ?? { dmg: 0, blocked: 0, miss: false, lethal: false, random: true };
+      if (runs.some((r) => JSON.stringify(r[uid]) !== first)) out[uid].random = true;
+    }
+    return out;
   }
 
   // ---------- turn flow ----------

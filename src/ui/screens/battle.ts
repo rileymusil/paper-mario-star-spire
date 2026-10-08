@@ -1,7 +1,7 @@
 import type { App } from '../app';
 import type { CEvent, Intent, RunState, Unit } from '../../engine/types';
 import type { CardDef } from '../../engine/defs';
-import { Combat } from '../../engine/combat';
+import { Combat, type HitPreview } from '../../engine/combat';
 import { finishCombat, makeCombat } from '../../engine/run';
 import { CARDS, ENEMIES, ITEMS, PARTNERS, SPECIALS } from '../../data/registry';
 import { h, sleep } from '../dom';
@@ -17,6 +17,8 @@ interface UnitView {
   sprite: SpriteView;
   bars: HTMLDivElement;
   intent: HTMLDivElement;
+  /** damage preview for the selected card */
+  preview: HTMLDivElement;
   home: { x: number; y: number };
   off: { x: number; y: number };
   anim?: Animation;
@@ -46,6 +48,9 @@ export class BattleView {
   private cmdPress: ((t: number) => void) | null = null;
   private dead = false;
   private run: RunState;
+  /** Damage-preview badges for the selected card, by unit uid; rebuilt when `previewKey` changes. */
+  private previews = new Map<string, HTMLElement>();
+  private previewKey = '';
 
   constructor(
     private app: App,
@@ -114,9 +119,10 @@ export class BattleView {
     const mover = h('div.mover', null, sprite.el);
     const bars = h('div.unit-bars');
     const intent = h('div.intent');
-    const root = h('div.unit', { class: `side-${u.side}`, onclick: (e: MouseEvent) => this.onUnitClick(u.uid, e) }, intent, mover, bars);
+    const preview = h('div.dmg-preview-slot');
+    const root = h('div.unit', { class: `side-${u.side}`, onclick: (e: MouseEvent) => this.onUnitClick(u.uid, e) }, intent, mover, preview, bars);
     tip(root, () => this.unitInfo(u.uid));
-    const v: UnitView = { uid: u.uid, root, mover, sprite, bars, intent, home: { x: 0, y: 0 }, off: { x: 0, y: 0 }, side: u.side };
+    const v: UnitView = { uid: u.uid, root, mover, sprite, bars, intent, preview, home: { x: 0, y: 0 }, off: { x: 0, y: 0 }, side: u.side };
     this.views.set(u.uid, v);
     this.field.appendChild(root);
     return v;
@@ -172,6 +178,7 @@ export class BattleView {
 
   private refreshAll() {
     if (this.dead) return;
+    this.updatePreviews();
     for (const u of [...this.c.allies, ...this.c.enemies]) this.refreshUnit(u);
     this.hudSlot.replaceChildren(this.app.hud({ combat: this.c, onItem: (slot) => this.onItem(slot), showMap: true }));
     this.renderControls();
@@ -197,6 +204,55 @@ export class BattleView {
     const targetable =
       (sel && this.c.targetsFor(sel).some((t) => t.uid === u.uid)) || (this.pendingItem !== null && this.c.itemTargets(this.pendingItem).some((t) => t.uid === u.uid));
     v.root.classList.toggle('targetable', !!targetable);
+    const badge = this.previews.get(u.uid);
+    v.preview.replaceChildren(...(badge && !u.dead ? [badge] : []));
+    v.preview.style.bottom = `${Math.round(v.sprite.height * 0.45)}px`;
+  }
+
+  /** Simulate the selected card against each unit it could hit and build damage badges. */
+  private updatePreviews() {
+    const c = this.c;
+    const inst = this.selected !== null ? c.hand[this.selected] : undefined;
+    const key = inst ? JSON.stringify([inst.uid, c.fp, c.star, [...c.allies, ...c.enemies].map((u) => [u.hp, u.block, u.dead, u.st, u.traits])]) : '';
+    if (key === this.previewKey) return;
+    this.previewKey = key;
+    this.previews.clear();
+    if (!inst || this.selected === null || c.whyNot(inst)) return;
+    const d = CARDS[inst.id];
+    if (d.target === 'ally') return;
+    // In "Always Nice" mode every attack gets the bonus, so include it.
+    const nice = d.type === 'attack' && this.app.meta.settings.commands === 'auto';
+    const src = c.cardSource(inst);
+    if (d.target === 'enemy') {
+      for (const t of c.targetsFor(inst)) {
+        const p = c.previewPlay(this.selected, t.uid, nice);
+        if (p?.[t.uid]) this.previews.set(t.uid, this.previewBadge(p[t.uid], t.side, src && t !== src ? p[src.uid] : undefined));
+      }
+      return;
+    }
+    const p = c.previewPlay(this.selected, undefined, nice);
+    for (const [uid, hit] of Object.entries(p ?? {})) {
+      const u = c.unit(uid);
+      if (u) this.previews.set(uid, this.previewBadge(hit, u.side));
+    }
+  }
+
+  private previewBadge(hit: HitPreview, side: Unit['side'], self?: HitPreview): HTMLElement {
+    const main: Node[] = hit.random
+      ? [h('span.n', null, '?')]
+      : hit.miss && !hit.dmg
+        ? [h('span.n', null, 'MISS')]
+        : [
+            h('span.n', null, side === 'ally' ? `-${hit.dmg}` : String(hit.dmg)),
+            hit.blocked ? h('span.blk', { title: 'Absorbed by Block' }, String(hit.blocked)) : null,
+            hit.lethal ? h('span.ko', null, 'KO') : null,
+          ].filter((x): x is HTMLElement => !!x);
+    return h(
+      'div.dmg-preview',
+      { class: `side-${side}${hit.lethal && !hit.random ? ' lethal' : ''}${hit.random ? ' random' : ''}` },
+      ...main,
+      self && (self.dmg || self.random) ? h('span.self', null, `Ouch ${self.random ? '?' : `-${self.dmg}`}`) : null,
+    );
   }
 
   private basePose(u: Unit): string {

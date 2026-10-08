@@ -140,6 +140,36 @@ describe('combat rules', () => {
     expect(g.hp).toBe(50 - 8);
   });
 
+  it('previews a card play without changing the battle', () => {
+    const c = fight(['goomba', 'piranha']);
+    const [g, p] = c.enemies;
+    g.hp = g.maxHp = 50;
+    g.block = 4;
+    g.st.soft = 1;
+    const i = give(c, 'hammer');
+    const snapshot = () => JSON.stringify([c.allies, c.enemies, c.hand, c.discard, c.fp, c.star, c.rng.state, c.events, c.run]);
+    const before = snapshot();
+    const prev = c.previewPlay(i, g.uid, false)!;
+    // 6 * 1.5 for Soft = 9, 4 of it soaked by block
+    expect(prev[g.uid]).toEqual({ dmg: 5, blocked: 4, miss: false, lethal: false, random: false });
+    expect(snapshot()).toBe(before);
+    // jumping on a spiky foe: the preview shows the jumper getting hurt, and lethal hits
+    p.hp = 2;
+    const j = give(c, 'jump');
+    const jp = c.previewPlay(j, p.uid, false)!;
+    expect(jp[p.uid].lethal).toBe(true);
+    expect(jp.mario.dmg).toBe(3);
+  });
+
+  it('flags random outcomes in previews', () => {
+    const c = fight(['goomba', 'goomba', 'goomba'], (run) => {
+      run.partners.push({ id: 'bombette', hp: 18, maxHp: 18, rank: 0, field: true });
+    });
+    for (const e of c.enemies) e.hp = e.maxHp = 50;
+    const prev = c.previewPlay(give(c, 'chainReaction'), undefined, false)!;
+    for (const e of c.enemies) expect(prev[e.uid]?.random, e.uid).toBe(true);
+  });
+
   it('soft and shrunk modify damage', () => {
     const c = fight(['goomba']);
     const g = c.enemies[0];
