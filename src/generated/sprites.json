@@ -1,0 +1,1991 @@
+{
+ "chars": {
+  "mario": {
+   "src": "sprites/mario.png",
+   "w": 66,
+   "h": 65,
+   "n": 16,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "run": [
+     2,
+     3,
+     4
+    ],
+    "jump": [
+     5
+    ],
+    "fall": [
+     6
+    ],
+    "stomp": [
+     7
+    ],
+    "hammerUp": [
+     8
+    ],
+    "hammerDown": [
+     9
+    ],
+    "hurt": [
+     10
+    ],
+    "ko": [
+     11
+    ],
+    "victory": [
+     12,
+     13
+    ],
+    "guard": [
+     14
+    ],
+    "item": [
+     15
+    ]
+   },
+   "scale": 3
+  },
+  "goombario": {
+   "src": "sprites/goombario.png",
+   "w": 32,
+   "h": 31,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "kooper": {
+   "src": "sprites/kooper.png",
+   "w": 54,
+   "h": 51,
+   "n": 11,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "shell": [
+     5,
+     6,
+     7,
+     8
+    ],
+    "hurt": [
+     9
+    ],
+    "ko": [
+     10
+    ]
+   },
+   "scale": 3
+  },
+  "bombette": {
+   "src": "sprites/bombette.png",
+   "w": 42,
+   "h": 44,
+   "n": 10,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "lit": [
+     5,
+     6,
+     7
+    ],
+    "hurt": [
+     8
+    ],
+    "ko": [
+     9
+    ]
+   },
+   "scale": 3
+  },
+  "parakarry": {
+   "src": "sprites/parakarry.png",
+   "w": 62,
+   "h": 54,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "bow": {
+   "src": "sprites/bow.png",
+   "w": 43,
+   "h": 34,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "watt": {
+   "src": "sprites/watt.png",
+   "w": 62,
+   "h": 59,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "sushie": {
+   "src": "sprites/sushie.png",
+   "w": 38,
+   "h": 37,
+   "n": 7,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ],
+    "ko": [
+     6
+    ]
+   },
+   "scale": 3
+  },
+  "lakilester": {
+   "src": "sprites/lakilester.png",
+   "w": 43,
+   "h": 49,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "goomba": {
+   "src": "sprites/goomba.png",
+   "w": 29,
+   "h": 31,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "paragoomba": {
+   "src": "sprites/paragoomba.png",
+   "w": 44,
+   "h": 36,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "koopa": {
+   "src": "sprites/koopa.png",
+   "w": 54,
+   "h": 50,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "flipped": [
+     4
+    ],
+    "ko": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "buzzy": {
+   "src": "sprites/buzzy.png",
+   "w": 29,
+   "h": 24,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "flipped": [
+     4
+    ],
+    "ko": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "bobomb": {
+   "src": "sprites/bobomb.png",
+   "w": 38,
+   "h": 34,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "bobomb_blue": {
+   "src": "sprites/bobomb_blue.png",
+   "w": 38,
+   "h": 34,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "piranha": {
+   "src": "sprites/piranha.png",
+   "w": 51,
+   "h": 52,
+   "n": 7,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ],
+    "ko": [
+     6
+    ]
+   },
+   "scale": 3
+  },
+  "bandit": {
+   "src": "sprites/bandit.png",
+   "w": 34,
+   "h": 42,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "bulletbill": {
+   "src": "sprites/bulletbill.png",
+   "w": 37,
+   "h": 28,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "swooper": {
+   "src": "sprites/swooper.png",
+   "w": 40,
+   "h": 34,
+   "n": 7,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ],
+    "hang": [
+     5,
+     6
+    ]
+   },
+   "scale": 3
+  },
+  "drybones": {
+   "src": "sprites/drybones.png",
+   "w": 33,
+   "h": 52,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "pile": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "boo": {
+   "src": "sprites/boo.png",
+   "w": 40,
+   "h": 43,
+   "n": 7,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2
+    ],
+    "attack": [
+     3
+    ],
+    "hurt": [
+     4
+    ],
+    "vanish": [
+     5
+    ],
+    "ko": [
+     6
+    ]
+   },
+   "scale": 3
+  },
+  "gustyboo": {
+   "src": "sprites/gustyboo.png",
+   "w": 40,
+   "h": 43,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2
+    ],
+    "attack": [
+     3
+    ],
+    "hurt": [
+     4
+    ],
+    "ko": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "bubulb_green": {
+   "src": "sprites/bubulb_green.png",
+   "w": 46,
+   "h": 69,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "bubulb_yellow": {
+   "src": "sprites/bubulb_yellow.png",
+   "w": 46,
+   "h": 69,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "bubulb_pink": {
+   "src": "sprites/bubulb_pink.png",
+   "w": 46,
+   "h": 69,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "bubulb_blue": {
+   "src": "sprites/bubulb_blue.png",
+   "w": 46,
+   "h": 69,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "albino": {
+   "src": "sprites/albino.png",
+   "w": 82,
+   "h": 71,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2
+    ],
+    "attack": [
+     3
+    ],
+    "hurt": [
+     4
+    ],
+    "ko": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "babybuzzar": {
+   "src": "sprites/babybuzzar.png",
+   "w": 31,
+   "h": 45,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "egg": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "clubba": {
+   "src": "sprites/clubba.png",
+   "w": 59,
+   "h": 53,
+   "n": 7,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "sleep": [
+     4,
+     5
+    ],
+    "ko": [
+     6
+    ]
+   },
+   "scale": 3
+  },
+  "hammerbro": {
+   "src": "sprites/hammerbro.png",
+   "w": 67,
+   "h": 55,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "throw": [
+     3
+    ],
+    "hurt": [
+     4
+    ],
+    "ko": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "ninji": {
+   "src": "sprites/ninji.png",
+   "w": 40,
+   "h": 35,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "ninji_red": {
+   "src": "sprites/ninji_red.png",
+   "w": 40,
+   "h": 35,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "ninji_green": {
+   "src": "sprites/ninji_green.png",
+   "w": 40,
+   "h": 35,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "ninji_blue": {
+   "src": "sprites/ninji_blue.png",
+   "w": 40,
+   "h": 35,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "ninji_yellow": {
+   "src": "sprites/ninji_yellow.png",
+   "w": 40,
+   "h": 35,
+   "n": 6,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ]
+   },
+   "scale": 3
+  },
+  "goombaking": {
+   "src": "sprites/goombaking.png",
+   "w": 88,
+   "h": 98,
+   "n": 3,
+   "anims": {
+    "idle": [
+     0
+    ],
+    "attack": [
+     1
+    ],
+    "hurt": [
+     2
+    ]
+   },
+   "scale": 3
+  },
+  "tubba": {
+   "src": "sprites/tubba.png",
+   "w": 139,
+   "h": 116,
+   "n": 3,
+   "anims": {
+    "idle": [
+     0
+    ],
+    "attack": [
+     1
+    ],
+    "hurt": [
+     2
+    ]
+   },
+   "scale": 3
+  },
+  "raphael": {
+   "src": "sprites/raphael.png",
+   "w": 116,
+   "h": 103,
+   "n": 3,
+   "anims": {
+    "idle": [
+     0
+    ],
+    "attack": [
+     1
+    ],
+    "hurt": [
+     2
+    ]
+   },
+   "scale": 3
+  },
+  "buzzar": {
+   "src": "sprites/buzzar.png",
+   "w": 114,
+   "h": 106,
+   "n": 3,
+   "anims": {
+    "idle": [
+     0
+    ],
+    "attack": [
+     1
+    ],
+    "hurt": [
+     2
+    ]
+   },
+   "scale": 3
+  },
+  "bowser": {
+   "src": "sprites/bowser.png",
+   "w": 114,
+   "h": 146,
+   "n": 3,
+   "anims": {
+    "idle": [
+     0
+    ],
+    "attack": [
+     1
+    ],
+    "hurt": [
+     2
+    ]
+   },
+   "scale": 3
+  },
+  "kammy": {
+   "src": "sprites/kammy.png",
+   "w": 94,
+   "h": 72,
+   "n": 5,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ],
+    "ko": [
+     4
+    ]
+   },
+   "scale": 3
+  },
+  "lily": {
+   "src": "sprites/lily.png",
+   "w": 119,
+   "h": 95,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ],
+    "attack": [
+     2
+    ],
+    "hurt": [
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "gourmet": {
+   "src": "sprites/gourmet.png",
+   "w": 118,
+   "h": 107,
+   "n": 7,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "attack": [
+     4
+    ],
+    "hurt": [
+     5
+    ],
+    "eat": [
+     6
+    ]
+   },
+   "scale": 2
+  },
+  "quizmo": {
+   "src": "sprites/quizmo.png",
+   "w": 45,
+   "h": 54,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "luigi": {
+   "src": "sprites/luigi.png",
+   "w": 28,
+   "h": 60,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "peach": {
+   "src": "sprites/peach.png",
+   "w": 40,
+   "h": 69,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "kolorado": {
+   "src": "sprites/kolorado.png",
+   "w": 36,
+   "h": 57,
+   "n": 4,
+   "anims": {
+    "idle": [
+     0,
+     1,
+     2,
+     3
+    ]
+   },
+   "scale": 3
+  },
+  "bartender": {
+   "src": "sprites/bartender.png",
+   "w": 36,
+   "h": 51,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "twirler": {
+   "src": "sprites/twirler.png",
+   "w": 32,
+   "h": 43,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "bootler": {
+   "src": "sprites/bootler.png",
+   "w": 37,
+   "h": 38,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "bumpty": {
+   "src": "sprites/bumpty.png",
+   "w": 36,
+   "h": 35,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "chanterelle": {
+   "src": "sprites/chanterelle.png",
+   "w": 32,
+   "h": 45,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "danet": {
+   "src": "sprites/danet.png",
+   "w": 25,
+   "h": 33,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  },
+  "goompa": {
+   "src": "sprites/goompa.png",
+   "w": 26,
+   "h": 36,
+   "n": 2,
+   "anims": {
+    "idle": [
+     0,
+     1
+    ]
+   },
+   "scale": 3
+  }
+ },
+ "icons": {
+  "src": "sprites/icons.png",
+  "w": 512,
+  "h": 259,
+  "rects": {
+   "coin": [
+    0,
+    0,
+    25,
+    25
+   ],
+   "p_mario": [
+    26,
+    0,
+    12,
+    20
+   ],
+   "heart": [
+    39,
+    0,
+    28,
+    23
+   ],
+   "flower": [
+    68,
+    0,
+    27,
+    26
+   ],
+   "star": [
+    96,
+    0,
+    32,
+    32
+   ],
+   "starOutline": [
+    129,
+    0,
+    31,
+    58
+   ],
+   "ring": [
+    161,
+    0,
+    37,
+    37
+   ],
+   "btnA": [
+    199,
+    0,
+    41,
+    31
+   ],
+   "arrowUp": [
+    241,
+    0,
+    26,
+    27
+   ],
+   "arrowUpBlue": [
+    268,
+    0,
+    26,
+    27
+   ],
+   "poison": [
+    295,
+    0,
+    29,
+    26
+   ],
+   "plus": [
+    325,
+    0,
+    28,
+    28
+   ],
+   "cloud": [
+    354,
+    0,
+    30,
+    27
+   ],
+   "block": [
+    385,
+    0,
+    31,
+    30
+   ],
+   "st_dizzy": [
+    417,
+    0,
+    16,
+    16
+   ],
+   "st_frozen": [
+    434,
+    0,
+    16,
+    16
+   ],
+   "st_poison": [
+    451,
+    0,
+    16,
+    16
+   ],
+   "st_shrink": [
+    468,
+    0,
+    16,
+    16
+   ],
+   "st_sleep": [
+    485,
+    0,
+    16,
+    16
+   ],
+   "st_static": [
+    0,
+    59,
+    16,
+    16
+   ],
+   "st_charge": [
+    17,
+    59,
+    16,
+    16
+   ],
+   "st_skull": [
+    34,
+    59,
+    16,
+    16
+   ],
+   "boots": [
+    51,
+    59,
+    24,
+    24
+   ],
+   "shell": [
+    76,
+    59,
+    23,
+    24
+   ],
+   "hammer": [
+    100,
+    59,
+    24,
+    24
+   ],
+   "hammer2": [
+    125,
+    59,
+    24,
+    24
+   ],
+   "hammer3": [
+    150,
+    59,
+    24,
+    24
+   ],
+   "fireflower": [
+    175,
+    59,
+    24,
+    24
+   ],
+   "starIcon": [
+    200,
+    59,
+    24,
+    24
+   ],
+   "flag": [
+    225,
+    59,
+    23,
+    24
+   ],
+   "run": [
+    249,
+    59,
+    22,
+    22
+   ],
+   "x": [
+    272,
+    59,
+    20,
+    20
+   ],
+   "p_goombario": [
+    293,
+    59,
+    22,
+    23
+   ],
+   "p_kooper": [
+    316,
+    59,
+    20,
+    24
+   ],
+   "p_bombette": [
+    337,
+    59,
+    24,
+    24
+   ],
+   "p_parakarry": [
+    362,
+    59,
+    24,
+    24
+   ],
+   "p_bow": [
+    387,
+    59,
+    24,
+    23
+   ],
+   "p_watt": [
+    412,
+    59,
+    24,
+    24
+   ],
+   "p_sushie": [
+    437,
+    59,
+    24,
+    23
+   ],
+   "p_lakilester": [
+    462,
+    59,
+    24,
+    24
+   ],
+   "spirit1": [
+    487,
+    59,
+    24,
+    24
+   ],
+   "spirit2": [
+    0,
+    84,
+    24,
+    24
+   ],
+   "spirit3": [
+    25,
+    84,
+    24,
+    24
+   ],
+   "spirit4": [
+    50,
+    84,
+    24,
+    24
+   ],
+   "spirit5": [
+    75,
+    84,
+    24,
+    24
+   ],
+   "spirit6": [
+    100,
+    84,
+    24,
+    24
+   ],
+   "spirit7": [
+    125,
+    84,
+    24,
+    24
+   ],
+   "p_peach": [
+    150,
+    84,
+    24,
+    24
+   ],
+   "boots_b1": [
+    175,
+    84,
+    24,
+    24
+   ],
+   "boots_b2": [
+    200,
+    84,
+    24,
+    24
+   ],
+   "boots_b3": [
+    225,
+    84,
+    24,
+    24
+   ],
+   "boots_b4": [
+    250,
+    84,
+    24,
+    22
+   ],
+   "boots_b5": [
+    275,
+    84,
+    24,
+    23
+   ],
+   "boots_b6": [
+    300,
+    84,
+    24,
+    23
+   ],
+   "boots_b7": [
+    325,
+    84,
+    24,
+    22
+   ],
+   "hammer_b1": [
+    350,
+    84,
+    24,
+    24
+   ],
+   "hammer_b2": [
+    375,
+    84,
+    24,
+    24
+   ],
+   "hammer_b3": [
+    400,
+    84,
+    24,
+    24
+   ],
+   "hammer_b4": [
+    425,
+    84,
+    24,
+    24
+   ],
+   "hammer_b5": [
+    450,
+    84,
+    24,
+    24
+   ],
+   "hammer_b6": [
+    475,
+    84,
+    24,
+    24
+   ],
+   "quiz": [
+    0,
+    109,
+    24,
+    24
+   ],
+   "w_nice": [
+    25,
+    109,
+    52,
+    18
+   ],
+   "w_good": [
+    78,
+    109,
+    54,
+    18
+   ],
+   "w_super": [
+    133,
+    109,
+    61,
+    21
+   ],
+   "w_miss": [
+    195,
+    109,
+    54,
+    21
+   ],
+   "w_lucky": [
+    250,
+    109,
+    61,
+    26
+   ],
+   "burst100": [
+    312,
+    109,
+    59,
+    44
+   ],
+   "i_mushroom": [
+    372,
+    109,
+    24,
+    23
+   ],
+   "i_lifeshroom": [
+    397,
+    109,
+    24,
+    23
+   ],
+   "i_voltshroom": [
+    422,
+    109,
+    24,
+    23
+   ],
+   "i_supershroom": [
+    447,
+    109,
+    24,
+    23
+   ],
+   "i_ultrashroom": [
+    472,
+    109,
+    24,
+    23
+   ],
+   "i_fireflower": [
+    0,
+    154,
+    24,
+    24
+   ],
+   "i_honey": [
+    25,
+    154,
+    20,
+    24
+   ],
+   "i_tonic": [
+    46,
+    154,
+    21,
+    24
+   ],
+   "i_maple": [
+    68,
+    154,
+    24,
+    24
+   ],
+   "i_jelly": [
+    93,
+    154,
+    24,
+    24
+   ],
+   "i_snowman": [
+    118,
+    154,
+    24,
+    24
+   ],
+   "i_pow": [
+    143,
+    154,
+    24,
+    24
+   ],
+   "i_sheep": [
+    168,
+    154,
+    24,
+    24
+   ],
+   "i_dizzy": [
+    193,
+    154,
+    23,
+    23
+   ],
+   "i_shootingstar": [
+    217,
+    154,
+    24,
+    23
+   ],
+   "i_thunderbolt": [
+    242,
+    154,
+    24,
+    24
+   ],
+   "i_thunderrage": [
+    267,
+    154,
+    24,
+    24
+   ],
+   "i_stonecap": [
+    292,
+    154,
+    24,
+    19
+   ],
+   "i_coconut": [
+    317,
+    154,
+    24,
+    24
+   ],
+   "i_cake": [
+    342,
+    154,
+    28,
+    21
+   ],
+   "i_egg": [
+    371,
+    154,
+    24,
+    24
+   ],
+   "i_apple": [
+    396,
+    154,
+    24,
+    24
+   ],
+   "i_lemon": [
+    421,
+    154,
+    24,
+    24
+   ],
+   "i_superblock": [
+    446,
+    154,
+    24,
+    24
+   ],
+   "i_starpiece": [
+    471,
+    154,
+    24,
+    24
+   ],
+   "i_gift": [
+    0,
+    179,
+    31,
+    30
+   ],
+   "i_letter": [
+    32,
+    179,
+    25,
+    25
+   ],
+   "i_key": [
+    58,
+    179,
+    27,
+    25
+   ],
+   "i_book": [
+    86,
+    179,
+    24,
+    23
+   ],
+   "i_chest": [
+    111,
+    179,
+    24,
+    19
+   ],
+   "b_113": [
+    136,
+    179,
+    24,
+    24
+   ],
+   "b_114": [
+    161,
+    179,
+    22,
+    22
+   ],
+   "b_115": [
+    184,
+    179,
+    24,
+    24
+   ],
+   "b_117": [
+    209,
+    179,
+    24,
+    24
+   ],
+   "b_118": [
+    234,
+    179,
+    24,
+    24
+   ],
+   "b_119": [
+    259,
+    179,
+    24,
+    24
+   ],
+   "b_120": [
+    284,
+    179,
+    24,
+    24
+   ],
+   "b_121": [
+    309,
+    179,
+    24,
+    24
+   ],
+   "b_122": [
+    334,
+    179,
+    24,
+    24
+   ],
+   "b_155": [
+    359,
+    179,
+    24,
+    24
+   ],
+   "b_158": [
+    384,
+    179,
+    24,
+    24
+   ],
+   "b_159": [
+    409,
+    179,
+    24,
+    24
+   ],
+   "b_160": [
+    434,
+    179,
+    24,
+    24
+   ],
+   "b_161": [
+    459,
+    179,
+    24,
+    24
+   ],
+   "b_162": [
+    484,
+    179,
+    24,
+    24
+   ],
+   "b_163": [
+    0,
+    210,
+    24,
+    24
+   ],
+   "b_164": [
+    25,
+    210,
+    24,
+    24
+   ],
+   "b_225": [
+    50,
+    210,
+    24,
+    24
+   ],
+   "b_226": [
+    75,
+    210,
+    24,
+    24
+   ],
+   "b_227": [
+    100,
+    210,
+    24,
+    24
+   ],
+   "b_228": [
+    125,
+    210,
+    24,
+    23
+   ],
+   "b_229": [
+    150,
+    210,
+    24,
+    24
+   ],
+   "b_230": [
+    175,
+    210,
+    24,
+    24
+   ],
+   "b_232": [
+    200,
+    210,
+    24,
+    24
+   ],
+   "b_233": [
+    225,
+    210,
+    24,
+    23
+   ],
+   "b_234": [
+    250,
+    210,
+    24,
+    23
+   ],
+   "b_235": [
+    275,
+    210,
+    24,
+    24
+   ],
+   "b_237": [
+    300,
+    210,
+    24,
+    24
+   ],
+   "b_238": [
+    325,
+    210,
+    24,
+    24
+   ],
+   "b_239": [
+    350,
+    210,
+    24,
+    24
+   ],
+   "b_240": [
+    375,
+    210,
+    24,
+    24
+   ],
+   "b_241": [
+    400,
+    210,
+    24,
+    24
+   ],
+   "b_243": [
+    425,
+    210,
+    24,
+    24
+   ],
+   "b_244": [
+    450,
+    210,
+    24,
+    24
+   ],
+   "b_245": [
+    475,
+    210,
+    24,
+    24
+   ],
+   "b_246": [
+    0,
+    235,
+    24,
+    24
+   ],
+   "b_247": [
+    25,
+    235,
+    25,
+    24
+   ],
+   "b_248": [
+    51,
+    235,
+    20,
+    24
+   ],
+   "b_249": [
+    72,
+    235,
+    24,
+    24
+   ],
+   "b_252": [
+    97,
+    235,
+    24,
+    24
+   ],
+   "b_253": [
+    122,
+    235,
+    24,
+    21
+   ],
+   "b_288": [
+    147,
+    235,
+    24,
+    24
+   ],
+   "b_289": [
+    172,
+    235,
+    24,
+    24
+   ],
+   "b_291": [
+    197,
+    235,
+    24,
+    24
+   ],
+   "b_299": [
+    222,
+    235,
+    24,
+    24
+   ],
+   "b_303": [
+    247,
+    235,
+    24,
+    24
+   ],
+   "b_305": [
+    272,
+    235,
+    23,
+    24
+   ]
+  }
+ }
+}

@@ -1,0 +1,6 @@
+node_modules
+dist
+tools/contact
+tools/boxes
+__pycache__
+.claude
