@@ -126,7 +126,12 @@ export class BattleView {
   private layout(animate: boolean) {
     const L = LAYOUTS[stage().orient];
     this.c.allies.forEach((u, i) => this.setHome(this.views.get(u.uid)!, L.allyX[i], L.ground + L.allyY[i], animate));
-    const shown = this.c.enemies.filter((e) => !this.views.get(e.uid)?.gone);
+    // A move that summons several foes adds them all to the combat before their
+    // summon events play, so skip any that don't have a view yet.
+    const shown = this.c.enemies.filter((e) => {
+      const v = this.views.get(e.uid);
+      return v && !v.gone;
+    });
     const widths = shown.map((e) => Math.max(70, this.views.get(e.uid)!.sprite.width * 0.9));
     const gap = 14;
     const total = widths.reduce((a, b) => a + b, 0) + gap * Math.max(0, shown.length - 1);
