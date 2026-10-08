@@ -70,6 +70,37 @@ describe('data integrity', () => {
       expect(ev.pages.start).toBeTruthy();
     }
   });
+
+  it('every path through every event reaches the end', () => {
+    for (const ev of EVENT_LIST) {
+      for (let seed = 0; seed < 12; seed++) {
+        const run = newRun({ seed: `W${seed}`, starter: 'goombario' });
+        run.coins = seed % 2 ? 999 : 10;
+        const rng = new Rng(seed);
+        const data: any = {};
+        ev.init?.(run, data);
+        let step = 'start';
+        for (let n = 0; step !== 'end'; n++) {
+          expect(n, `${ev.id} never ends`).toBeLessThan(20);
+          const page = ev.pages[step];
+          expect(page, `${ev.id}: missing page ${step}`).toBeTruthy();
+          const p = page(run, data);
+          if (p.minigame) {
+            data.hits = seed % (p.minigame.rounds + 1);
+            step = p.minigame.then;
+          } else if (p.pick) step = p.pick.then;
+          else {
+            const usable = p.options.filter((o) => !o.disabled);
+            expect(usable.length, `${ev.id}.${step} has no usable option`).toBeGreaterThan(0);
+            step = usable[(seed + n) % usable.length].go(run, data, rng);
+          }
+        }
+        expect(run.mario.hp, ev.id).toBeGreaterThan(0);
+        expect(run.mario.hp, ev.id).toBeLessThanOrEqual(run.mario.maxHp);
+        expect(run.coins, ev.id).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
 });
 
 describe('map', () => {

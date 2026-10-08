@@ -1,7 +1,7 @@
 import type { App } from '../app';
 import type { RunState, ScreenState } from '../../engine/types';
 import { EVENTS } from '../../data/events';
-import { canRemove, canUpgrade, completeNode, removeCard, transformCard, upgradeCard, withRng } from '../../engine/run';
+import { canDuplicate, canRemove, canUpgrade, completeNode, duplicateCard, removeCard, transformCard, upgradeCard, withRng } from '../../engine/run';
 import { h, sleep } from '../dom';
 import { button } from '../components';
 import { icon } from '../sprite';
@@ -34,14 +34,22 @@ export function renderEvent(app: App, run: RunState, s: Extract<ScreenState, { k
   );
   if (page.pick) {
     const pk = page.pick;
-    const filter = pk.kind === 'upgrade' ? (c: any) => canUpgrade(run, c) : (c: any) => canRemove(run, c);
-    const label = pk.kind === 'remove' ? 'Choose a card to remove' : pk.kind === 'upgrade' ? 'Choose a card to upgrade' : `Choose ${pk.count} cards to transform`;
+    const filter = pk.kind === 'upgrade' ? (c: any) => canUpgrade(run, c) : pk.kind === 'duplicate' ? (c: any) => canDuplicate(run, c) : (c: any) => canRemove(run, c);
+    const label =
+      pk.kind === 'remove'
+        ? 'Choose a card to remove'
+        : pk.kind === 'upgrade'
+          ? `Choose ${pk.count > 1 ? `${pk.count} cards` : 'a card'} to upgrade`
+          : pk.kind === 'duplicate'
+            ? 'Choose a card to duplicate'
+            : `Choose ${pk.count} cards to transform`;
     actions.push(
       button(label, () =>
         pickCards(run, label, pk.count, filter, (cards) => {
           for (const c of cards) {
             if (pk.kind === 'remove') removeCard(run, c.uid);
             else if (pk.kind === 'upgrade') upgradeCard(run, c.uid);
+            else if (pk.kind === 'duplicate') duplicateCard(run, c.uid);
             else withRng(run, 'events', (r) => transformCard(run, c.uid, r));
           }
           sfx.star();

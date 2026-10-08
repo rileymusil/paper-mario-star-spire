@@ -5,7 +5,7 @@ import { CARDS, ITEMS, SPECIALS } from '../src/data/registry';
 import { EVENTS } from '../src/data/events';
 import { reachable } from '../src/engine/map';
 import {
-  advanceAct, canRemove, canUpgrade, claimBadge, claimCard, claimCoins, claimItem, claimSuperBlock, completeNode, enterNode,
+  advanceAct, canDuplicate, canRemove, canUpgrade, claimBadge, claimCard, claimCoins, claimItem, claimSuperBlock, completeNode, duplicateCard, enterNode,
   finishCombat, healTeam, makeCombat, rankUp, recruit, removeCard, transformCard, upgradeCard, withRng,
 } from '../src/engine/run';
 
@@ -136,10 +136,12 @@ export function autoRun(run: RunState, seed = 1, skill = 0.7): { act: number; fl
         const ev = EVENTS[s.event];
         const page = ev.pages[s.step](run, s.data);
         if (page.pick) {
-          const pool = run.deck.filter((x) => (page.pick!.kind === 'upgrade' ? canUpgrade(run, x) : canRemove(run, x)));
+          const kind = page.pick.kind;
+          const pool = run.deck.filter((x) => (kind === 'upgrade' ? canUpgrade(run, x) : kind === 'duplicate' ? canDuplicate(run, x) : canRemove(run, x)));
           for (const card of pool.slice(0, page.pick.count)) {
             if (page.pick.kind === 'remove') removeCard(run, card.uid);
             else if (page.pick.kind === 'upgrade') upgradeCard(run, card.uid);
+            else if (page.pick.kind === 'duplicate') duplicateCard(run, card.uid);
             else withRng(run, 'events', (r) => transformCard(run, card.uid, r));
           }
           s.step = page.pick.then;

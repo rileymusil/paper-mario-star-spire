@@ -108,6 +108,17 @@ export function canUpgrade(run: RunState, inst: CardInst): boolean {
   return !isUpgraded(run, inst) && d.type !== 'status' && d.type !== 'curse';
 }
 
+export function canDuplicate(_run: RunState, inst: CardInst): boolean {
+  const d = CARDS[inst.id];
+  return d.type !== 'status' && d.type !== 'curse';
+}
+
+/** Add a copy of a deck card (keeping its upgrade). */
+export function duplicateCard(run: RunState, uid: string) {
+  const c = run.deck.find((c) => c.uid === uid);
+  if (c) addCard(run, c.id, c.up);
+}
+
 export function canRemove(_run: RunState, inst: CardInst): boolean {
   return CARDS[inst.id].owner === 'mario' || CARDS[inst.id].owner === 'none';
 }
