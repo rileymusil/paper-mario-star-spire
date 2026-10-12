@@ -1511,10 +1511,33 @@ b {
   align-items: center;
   gap: 18px;
 }
-.hardmode {
+.level-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: #fff;
   text-shadow: var(--stroke);
-  font-size: 18px;
+}
+.level-picker .btn.disabled {
+  opacity: 0.4;
+}
+.level-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 250px;
+  text-align: center;
+}
+.level-label b {
+  font-size: 20px;
+  color: var(--gold);
+}
+.level-label small {
+  font-size: 12px;
+  line-height: 1.2;
+}
+.level-label small.dim {
+  opacity: 0.75;
 }
 .howto p {
   font-size: 16px;

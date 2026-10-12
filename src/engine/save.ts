@@ -1,5 +1,6 @@
 import type { PartnerId, RunState } from './types';
 import { RUN_VERSION } from './run';
+import { MAX_LEVEL } from '../data/levels';
 
 export interface Settings {
   /** on: timed presses; auto: always Nice!; off: no timing bonus */
@@ -10,7 +11,10 @@ export interface Settings {
 
 export interface Meta {
   starters: PartnerId[];
-  hardUnlocked: boolean;
+  /** highest Star Level unlocked (0 until the first win) */
+  maxLevel: number;
+  /** from saves made before Star Levels */
+  hardUnlocked?: boolean;
   runs: number;
   wins: number;
   bestAct: number;
@@ -22,7 +26,7 @@ const META_KEY = 'pmspire.meta';
 
 export const DEFAULT_META: Meta = {
   starters: ['goombario', 'kooper', 'bombette'],
-  hardUnlocked: false,
+  maxLevel: 0,
   runs: 0,
   wins: 0,
   bestAct: 0,
@@ -49,7 +53,9 @@ function write(key: string, v: unknown) {
 
 export function loadMeta(): Meta {
   const m = read<Partial<Meta>>(META_KEY);
-  return { ...DEFAULT_META, ...m, settings: { ...DEFAULT_META.settings, ...m?.settings } };
+  const meta = { ...DEFAULT_META, ...m, settings: { ...DEFAULT_META.settings, ...m?.settings } };
+  if (m?.maxLevel === undefined && m?.hardUnlocked) meta.maxLevel = 1;
+  return meta;
 }
 
 export function saveMeta(m: Meta) {
@@ -65,8 +71,8 @@ export function saveRun(r: RunState | null) {
   write(RUN_KEY, r);
 }
 
-/** Record unlocks after clearing an act (1-3). Returns names of new unlocks. */
-export function unlockForAct(m: Meta, act: number): string[] {
+/** Record unlocks after clearing an act (1-3) at a Star Level. Returns names of new unlocks. */
+export function unlockForAct(m: Meta, act: number, level = 0): string[] {
   const out: string[] = [];
   m.bestAct = Math.max(m.bestAct, act);
   const add = (p: PartnerId, label: string) => {
@@ -79,9 +85,9 @@ export function unlockForAct(m: Meta, act: number): string[] {
   if (act >= 2) add('bow', 'Bow can now be chosen as a starter!');
   if (act >= 3) {
     add('watt', 'Watt can now be chosen as a starter!');
-    if (!m.hardUnlocked) {
-      m.hardUnlocked = true;
-      out.push('Hard mode unlocked!');
+    if (level >= m.maxLevel && m.maxLevel < MAX_LEVEL) {
+      m.maxLevel = level + 1;
+      out.push(m.maxLevel === 1 ? 'Star Levels unlocked! Pick Star Level 1 for a tougher climb.' : `Star Level ${m.maxLevel} unlocked!`);
     }
   }
   return out;

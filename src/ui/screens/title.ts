@@ -2,9 +2,10 @@ import type { App } from '../app';
 import type { PartnerId } from '../../engine/types';
 import { PARTNER_LIST, passiveText } from '../../data/partners';
 import { ACTS } from '../../data/acts';
+import { LEVELS } from '../../data/levels';
 import { CARDS } from '../../data/registry';
 import { h } from '../dom';
-import { button, cardEl, modal } from '../components';
+import { button, cardEl, modal, tip } from '../components';
 import { portrait } from '../sprite';
 import { sfx } from '../sfx';
 
@@ -41,8 +42,25 @@ export function renderTitle(app: App): HTMLElement {
 
 export function renderStarter(app: App): HTMLElement {
   let pick: PartnerId | null = null;
-  let hard = false;
-  const startBtn = button('Start!', () => pick && app.startRun(pick, hard), 'big primary disabled');
+  let level = app.meta.maxLevel;
+  const startBtn = button('Start!', () => pick && app.startRun(pick, level), 'big primary disabled');
+  const levelEl = h('div.level-picker');
+  const drawLevel = () => {
+    const step = (d: number) => () => {
+      level = Math.max(0, Math.min(app.meta.maxLevel, level + d));
+      sfx.select();
+      drawLevel();
+    };
+    levelEl.replaceChildren(
+      button('◀', step(-1), level <= 0 ? 'small disabled' : 'small'),
+      tip(
+        h('div.level-label', null, h('b', null, level ? `Star Level ${level}` : 'Normal'), h('small', null, level ? LEVELS[level - 1] : 'No extra challenge.'), level > 1 ? h('small.dim', null, `+ the ${level - 1} level${level > 2 ? 's' : ''} below`) : null),
+        () => (level ? LEVELS.slice(0, level).map((t, i) => `<b>${i + 1}.</b> ${t}`).join('<br>') : 'Win a run at your highest Star Level to unlock the next one.'),
+      ),
+      button('▶', step(1), level >= app.meta.maxLevel ? 'small disabled' : 'small'),
+    );
+  };
+  drawLevel();
   const cards = PARTNER_LIST.map((p) => {
     const unlocked = app.meta.starters.includes(p.id);
     const el = h(
@@ -79,9 +97,7 @@ export function renderStarter(app: App): HTMLElement {
       'div.starter-actions',
       null,
       button('Back', () => app.showTitle()),
-      app.meta.hardUnlocked
-        ? h('label.hardmode', null, h('input', { type: 'checkbox', onchange: (e: Event) => (hard = (e.target as HTMLInputElement).checked) }), ' Hard mode (tougher enemies)')
-        : null,
+      app.meta.maxLevel > 0 ? levelEl : null,
       startBtn,
     ),
   );

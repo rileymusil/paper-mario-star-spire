@@ -1,6 +1,7 @@
 import type { App } from '../app';
 import type { RunState } from '../../engine/types';
 import { ACTS } from '../../data/acts';
+import { starLevel } from '../../data/levels';
 import { ENEMIES, PARTNERS } from '../../data/registry';
 import { h } from '../dom';
 import { button } from '../components';
@@ -36,7 +37,7 @@ function stats(run: RunState): HTMLElement {
     h('div', null, `Battles won: ${s.battles} · Elites: ${s.elites} · Bosses: ${s.bosses}`),
     h('div', null, `Damage dealt: ${s.damageDealt} · Nice! hits: ${s.nice}`),
     h('div', null, `Deck: ${run.deck.length} cards · Badges: ${run.badges.length} · Coins earned: ${s.coinsEarned}`),
-    h('div.seed', null, `Seed ${run.seed}${run.hard ? ' · Hard' : ''}`),
+    h('div.seed', null, `Seed ${run.seed}${starLevel(run) ? ` · Star Level ${starLevel(run)}` : ''}`),
   );
 }
 

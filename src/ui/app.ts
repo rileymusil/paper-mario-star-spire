@@ -3,6 +3,7 @@ import type { Combat } from '../engine/combat';
 import { loadMeta, loadRun, saveMeta, saveRun, unlockForAct, type Meta } from '../engine/save';
 import { newRun } from '../engine/run';
 import { ACTS } from '../data/acts';
+import { starLevel } from '../data/levels';
 import { BADGES, ITEMS, PARTNERS } from '../data/registry';
 import { clear, h } from './dom';
 import { badgeTip, button, deckGrid, hideTip, itemTip, modal, tip } from './components';
@@ -48,8 +49,8 @@ export class App {
     this.render();
   }
 
-  startRun(starter: (typeof this.meta.starters)[number], hard: boolean) {
-    this.run = newRun({ starter, hard });
+  startRun(starter: (typeof this.meta.starters)[number], level: number) {
+    this.run = newRun({ starter, level });
     this.meta.runs++;
     saveMeta(this.meta);
     this.mode = 'run';
@@ -76,7 +77,7 @@ export class App {
 
   /** Called when an act's boss reward is resolved. */
   actCleared(act: number): string[] {
-    const news = unlockForAct(this.meta, act);
+    const news = unlockForAct(this.meta, act, this.run ? starLevel(this.run) : 0);
     if (act >= ACTS.length) this.meta.wins++;
     saveMeta(this.meta);
     return news;
@@ -168,7 +169,7 @@ export class App {
     const right = h(
       'div.hud-right',
       null,
-      h('div.hud-floor', null, `Act ${run.act}`, h('small', null, floor ? ` · Floor ${floor > run.map.floors ? 'Boss' : floor}` : '')),
+      h('div.hud-floor', null, `Act ${run.act}`, h('small', null, floor ? ` · Floor ${floor > run.map.floors ? 'Boss' : floor}` : ''), starLevel(run) ? h('small.hud-level', null, ` · ★${starLevel(run)}`) : null),
       button(h('span', null, 'Deck ', h('b', null, String(run.deck.length))), () => this.openDeck(), 'small'),
       opts.showMap ? button('Map', () => this.openMap(), 'small') : null,
       button('⚙', () => this.openSettings(), 'small gear'),

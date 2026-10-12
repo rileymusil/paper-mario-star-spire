@@ -3,7 +3,9 @@ import sprites from '../src/generated/sprites.json';
 import { Combat } from '../src/engine/combat';
 import { Rng } from '../src/engine/rng';
 import { generateMap, reachable } from '../src/engine/map';
-import { cardPool, newRun } from '../src/engine/run';
+import { cardPool, newRun, restHeal } from '../src/engine/run';
+import { DEFAULT_META, unlockForAct } from '../src/engine/save';
+import { MAX_LEVEL, starLevel } from '../src/data/levels';
 import type { RunState } from '../src/engine/types';
 import { ACTS, FLOORS } from '../src/data/acts';
 import { CARD_LIST } from '../src/data/cards';
@@ -100,6 +102,40 @@ describe('data integrity', () => {
         expect(run.coins, ev.id).toBeGreaterThanOrEqual(0);
       }
     }
+  });
+});
+
+describe('star levels', () => {
+  it('unlock one at a time by winning at the highest level', () => {
+    const m = { ...DEFAULT_META, starters: [...DEFAULT_META.starters] };
+    expect(unlockForAct(m, 3, 0)).toContain('Star Levels unlocked! Pick Star Level 1 for a tougher climb.');
+    expect(m.maxLevel).toBe(1);
+    unlockForAct(m, 3, 0); // winning below the top level unlocks nothing new
+    expect(m.maxLevel).toBe(1);
+    unlockForAct(m, 3, 1);
+    expect(m.maxLevel).toBe(2);
+    m.maxLevel = MAX_LEVEL;
+    expect(unlockForAct(m, 3, MAX_LEVEL)).toEqual([]);
+  });
+
+  it('apply their rules cumulatively', () => {
+    const base = newRun({ seed: 'L', starter: 'kooper' });
+    const hard = newRun({ seed: 'L', starter: 'kooper', level: 10 });
+    expect(hard.mario.maxHp).toBe(base.mario.maxHp - 5);
+    expect(hard.deck.some((c) => c.id === 'haunted')).toBe(true);
+    expect(restHeal(hard)).toBeLessThan(restHeal(base));
+    const elite = (run: RunState) => {
+      const c = new Combat(run, ['hammerbro'], 'elite', new Rng(1));
+      c.begin();
+      return c.enemies[0];
+    };
+    const e0 = elite(base);
+    const e10 = elite(hard);
+    expect(e10.maxHp).toBe(Math.round(e0.maxHp * 1.2));
+    expect(e10.st.strength).toBe(3);
+    // pre-ladder Hard saves count as Star Level 4
+    const old = { ...base, level: undefined, hard: true } as unknown as RunState;
+    expect(starLevel(old)).toBe(4);
   });
 });
 

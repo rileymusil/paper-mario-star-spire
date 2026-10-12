@@ -8,6 +8,7 @@ import { BADGE_LIST, ITEM_LIST } from '../data/misc';
 import { ALL_PARTNERS, RANK_HP } from '../data/partners';
 import { BADGES, CARDS, PARTNERS } from '../data/registry';
 import { EVENT_LIST, EVENTS } from '../data/events';
+import { starLevel } from '../data/levels';
 
 export const RUN_VERSION = 1;
 export const MARIO_HP = 45;
@@ -26,7 +27,7 @@ export function withRng<T>(run: RunState, stream: string, fn: (r: Rng) => T): T 
 
 // ---------- creation ----------
 
-export function newRun(opts: { seed?: string; starter: PartnerId; hard?: boolean }): RunState {
+export function newRun(opts: { seed?: string; starter: PartnerId; level?: number }): RunState {
   const seed = opts.seed ?? Math.random().toString(36).slice(2, 10).toUpperCase();
   const rng: Record<string, number> = {};
   for (const s of STREAMS) rng[s] = Rng.fromSeed(`${seed}:${s}`).state;
@@ -51,7 +52,7 @@ export function newRun(opts: { seed?: string; starter: PartnerId; hard?: boolean
     bosses: [],
     seenEvents: [],
     removeCost: 75,
-    hard: !!opts.hard,
+    level: opts.level ?? 0,
     nextUid: 1,
     stats: { battles: 0, elites: 0, bosses: 0, damageDealt: 0, nice: 0, coinsEarned: 0 },
     screen: { kind: 'actIntro' },
@@ -60,6 +61,8 @@ export function newRun(opts: { seed?: string; starter: PartnerId; hard?: boolean
     lastEncounter: '',
   };
   for (const id of START_DECK) addCard(run, id);
+  if (run.level >= 3) run.mario.hp = run.mario.maxHp = MARIO_HP - 5;
+  if (run.level >= 7) addCard(run, 'haunted');
   run.bosses = withRng(run, 'map', (r) => ACTS.map((a) => r.pick(a.bosses)));
   recruit(run, opts.starter);
   startAct(run, 1);
@@ -214,6 +217,11 @@ export function rankUp(run: RunState, id: PartnerId): boolean {
 
 export function unownedPartners(run: RunState): PartnerId[] {
   return ALL_PARTNERS.filter((id) => !run.partners.some((p) => p.id === id));
+}
+
+/** Share of max HP a rest heals. */
+export function restHeal(run: RunState): number {
+  return starLevel(run) >= 5 ? 0.225 : 0.3;
 }
 
 export function healTeam(run: RunState, pct: number) {
@@ -426,7 +434,8 @@ const PRICE: Record<string, [number, number]> = {
 
 export function makeShop(run: RunState): ShopStock {
   return withRng(run, 'shop', (r) => {
-    const price = (k: string) => r.int(...PRICE[k]);
+    const markup = starLevel(run) >= 8 ? 1.15 : 1;
+    const price = (k: string) => Math.round(r.int(...PRICE[k]) * markup);
     const cards: ShopStock['cards'] = [];
     const weights: [string, number][] = [['common', 55], ['uncommon', 35], ['rare', 10]];
     const field = run.partners.filter((p) => p.field).map((p) => p.id as string);
@@ -452,7 +461,7 @@ export function makeShop(run: RunState): ShopStock {
       const id = rollBadge({ ...run, badges: [...run.badges, ...badges.map((b) => b.id)] }, r);
       if (id) badges.push({ id, price: price(`b${BADGES[id].rarity === 'boss' ? 'rare' : BADGES[id].rarity}`), sold: false });
     }
-    return { cards, items, badges, superBlock: r.chance(0.4) ? { price: r.int(110, 130), sold: false } : null, removeUsed: false };
+    return { cards, items, badges, superBlock: r.chance(0.4) ? { price: Math.round(r.int(110, 130) * markup), sold: false } : null, removeUsed: false };
   });
 }
 

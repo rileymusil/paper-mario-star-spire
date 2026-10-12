@@ -141,7 +141,10 @@ export interface RunState {
   /** event ids already seen this run */
   seenEvents: string[];
   removeCost: number;
-  hard: boolean;
+  /** Star Level (difficulty) */
+  level: number;
+  /** Hard mode, from saves made before Star Levels */
+  hard?: boolean;
   nextUid: number;
   stats: RunStats;
   /** pending reward/screen state so reloads resume where they left off */

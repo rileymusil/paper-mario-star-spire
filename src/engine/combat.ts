@@ -2,6 +2,7 @@ import type { AtkKind, CardInst, CEvent, Intent, PartnerId, RunState, StatusId, 
 import type { CardDef, MoveDef } from './defs';
 import { Rng } from './rng';
 import { CARDS, ENEMIES, ITEMS, PARTNERS, SPECIALS } from '../data/registry';
+import { starLevel } from '../data/levels';
 
 export interface AttackOpts {
   hits?: number;
@@ -212,7 +213,9 @@ export class Combat {
     const def = ENEMIES[id];
     if (!def) throw new Error(`unknown enemy ${id}`);
     let hp = this.rng.int(def.hp[0], def.hp[1]);
-    if (this.run.hard) hp = Math.round(hp * 1.2);
+    const level = starLevel(this.run);
+    const hpMul = (this.kind === 'elite' && level >= 1 ? 1.2 : 1) * (this.kind === 'normal' && level >= 2 ? 1.15 : 1) * (this.kind === 'boss' && level >= 4 ? 1.15 : 1);
+    hp = Math.round(hp * hpMul);
     const u: Unit = {
       uid: `e${this.uidN++}`,
       side: 'enemy',
@@ -246,6 +249,11 @@ export class Combat {
     if (this.run.paradeBuff > 0) this.star = Math.min(this.starMax, this.star + 2);
     if (this.has('chillOut')) for (const e of this.enemies) this.applyStatus(e, 'shrunk', 1);
     if (this.has('fpPlus')) this.maxFp += 1;
+    const level = starLevel(this.run);
+    for (const e of this.enemies) {
+      const str = (level >= 6 ? 1 : 0) + (level >= 9 && this.kind !== 'normal' && !e.traits.includes('minion') ? 2 : 0);
+      if (str) e.st.strength = (e.st.strength ?? 0) + str;
+    }
     const spark = this.passive('watt');
     if (spark) this.mario.st.static = (this.mario.st.static ?? 0) + spark;
     const cloud = this.passive('lakilester');
@@ -622,7 +630,7 @@ export class Combat {
   /** Start a boss's second phase the first time its HP drops to the threshold. */
   private checkPhase(u: Unit) {
     const p = u.side === 'enemy' ? ENEMIES[u.id].phase2 : undefined;
-    if (!p || u.dead || u.hp <= 0 || u.mem.phase2 || u.hp > u.maxHp * (p.at ?? 0.5)) return;
+    if (!p || u.dead || u.hp <= 0 || u.mem.phase2 || u.hp > u.maxHp * (p.at ?? (starLevel(this.run) >= 10 ? 0.65 : 0.5))) return;
     u.mem.phase2 = true;
     u.mem.turn = -1;
     this.emit({ t: 'phase', target: u.uid, text: p.name });

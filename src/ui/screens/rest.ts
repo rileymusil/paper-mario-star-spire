@@ -1,7 +1,7 @@
 import type { App } from '../app';
 import type { RunState, ScreenState } from '../../engine/types';
 import { PARTNERS } from '../../data/registry';
-import { canUpgrade, completeNode, healTeam, upgradeCard } from '../../engine/run';
+import { canUpgrade, completeNode, healTeam, restHeal, upgradeCard } from '../../engine/run';
 import { h } from '../dom';
 import { button } from '../components';
 import { iconFit, portrait } from '../sprite';
@@ -9,7 +9,8 @@ import { sfx } from '../sfx';
 import { partyModal, pickCards, rankUpModal } from './common';
 
 export function renderRest(app: App, run: RunState, s: Extract<ScreenState, { kind: 'rest' }>): HTMLElement {
-  const healAmt = Math.ceil(run.mario.maxHp * 0.3);
+  const pct = restHeal(run);
+  const healAmt = Math.ceil(run.mario.maxHp * pct);
   const choice = (ic: Node, title: string, desc: string, onclick: () => void, disabled = false) =>
     h('div.rest-choice', { class: disabled ? 'disabled' : 'pickable', onclick: () => (disabled ? sfx.error() : onclick()) }, ic, h('b', null, title), h('small', null, desc));
   const main = s.used
@@ -17,8 +18,8 @@ export function renderRest(app: App, run: RunState, s: Extract<ScreenState, { ki
     : h(
         'div.rest-choices',
         null,
-        choice(iconFit('heart', 56), 'Rest', `Heal Mario ${healAmt} HP and every partner 30%. KO'd partners wake up.`, () => {
-          healTeam(run, 0.3);
+        choice(iconFit('heart', 56), 'Rest', `Heal Mario ${healAmt} HP and every partner ${Math.round(pct * 100)}%. KO'd partners wake up.`, () => {
+          healTeam(run, pct);
           s.used = true;
           sfx.heal();
           app.commit();
