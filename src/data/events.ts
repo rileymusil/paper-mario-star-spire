@@ -1,6 +1,7 @@
 import type { Reward, RunState } from '../engine/types';
 import type { Rng } from '../engine/rng';
 import { heroOf } from './heroes';
+import { CARDS } from './registry';
 import { addBadge, addCard, addItem, canUpgrade, healTeam, rollBadge, rollCards, rollItem, upgradeCard } from '../engine/run';
 
 export interface EventOption {
@@ -574,6 +575,115 @@ export const EVENT_LIST: EventDef[] = [
       }),
       give: () => ({ text: 'Which card will you hand over?', pick: { kind: 'remove', count: 1, then: 'take' }, options: [] }),
       take: (_run, d) => ({ text: '"Pleasure doing business." The Dry Bones fans out its best cards.', reward: d.reward, options: [leave('Continue')] }),
+    },
+  },
+  // ---------------- hero-specific ----------------
+  {
+    id: 'mariosLetter', title: 'A Letter from Mario', npc: 'i_letter', npcIcon: true, acts: [1, 2],
+    when: (run) => heroOf(run).id === 'luigi',
+    pages: {
+      start: () => ({
+        text: 'Parakarry drops off a letter. "Bro! I heard you\'re climbing the Star Spire. Remember: jump with your heart, not your knees! - Mario"',
+        options: [
+          {
+            label: 'Read it bravely', detail: 'Upgrade 2 random Jump cards.',
+            go: (run, d, r) => {
+              const jumps = run.deck.filter((c) => CARDS[c.id].atk === 'jump' && canUpgrade(run, c));
+              d.n = 0;
+              for (const c of r.sample(jumps, 2)) {
+                upgradeCard(run, c.uid);
+                d.n++;
+              }
+              return 'read';
+            },
+          },
+          { label: 'Hide it under your hat', detail: 'Heal Luigi 15 HP.', go: (run) => { run.mario.hp = Math.min(run.mario.maxHp, run.mario.hp + 15); return 'hid'; } },
+        ],
+      }),
+      read: (_run, d) => ({ text: `Luigi stands a little taller. (${d.n} Jump card${d.n === 1 ? '' : 's'} upgraded)`, options: [leave()] }),
+      hid: () => ({ text: "It's a nice, warm letter. Luigi feels much better. (+15 HP)", options: [leave()] }),
+    },
+  },
+  {
+    id: 'hauntedHall', title: 'The Haunted Hallway', npc: 'boo', acts: [2, 3],
+    when: (run) => heroOf(run).id === 'luigi',
+    pages: {
+      start: () => ({
+        text: 'A long, dark hallway. Something giggles in the shadows. Luigi\'s knees are knocking...',
+        options: [
+          { label: 'Steady your nerves', detail: 'Remove up to 2 cards.', go: () => 'steady' },
+          { label: 'RUN!', detail: 'Luigi loses 4 HP. Grab the 50 coins a Boo drops in the chase.', go: (run) => { hurtMario(run, 4); run.coins += 50; return 'ran'; } },
+        ],
+      }),
+      steady: () => ({ text: 'Deep breaths... Choose up to 2 fears to leave behind.', pick: { kind: 'remove', count: 2, then: 'calm' }, options: [] }),
+      calm: () => ({ text: 'The giggling stops. Luigi walks out the other side, chin held high.', options: [leave()] }),
+      ran: () => ({ text: 'AAAAAH! Luigi bolts down the hall. The Boo is so startled it drops its coin purse. (-4 HP, +50 coins)', options: [leave()] }),
+    },
+  },
+  {
+    id: 'bartenderAdvice', title: 'A Quiet Word', npc: 'bartender', acts: [1, 2, 3],
+    when: (run) => heroOf(run).id === 'peach',
+    pages: {
+      start: (run) => ({
+        text: 'The Club 64 bartender bows deeply. "Your Highness! An honor. Can I offer some advice? Or perhaps something warm?"',
+        options: [
+          { label: 'Ask for advice', detail: 'Upgrade 2 cards of your choice.', go: () => 'advice' },
+          { label: 'Something warm', detail: 'Heal 10 HP and gain a Cake.', disabled: bagFull(run), go: (r2) => { r2.mario.hp = Math.min(r2.mario.maxHp, r2.mario.hp + 10); addItem(r2, 'cake'); return 'warm'; } },
+          leave(),
+        ],
+      }),
+      advice: () => ({ text: '"Every great ruler knows when to strike... and when to sip tea."', pick: { kind: 'upgrade', count: 2, then: 'done' }, options: [] }),
+      warm: () => ({ text: 'A cup of cocoa and a slice of cake to go. Peach feels refreshed. (+10 HP)', options: [leave()] }),
+      done: () => ({ text: 'The bartender beams. "Godspeed, Princess."', options: [leave()] }),
+    },
+  },
+  {
+    id: 'royalTreasury', title: 'Royal Treasury', npc: 'coin', npcIcon: true, acts: [2, 3],
+    when: (run) => heroOf(run).id === 'peach',
+    pages: {
+      start: () => ({
+        text: 'A Toad tax collector salutes. "Princess! The village wants to help. Shall we send the treasury, or would you rather the people keep it?"',
+        options: [
+          { label: 'Accept the treasury', detail: 'Gain 90 coins.', go: (run) => { run.coins += 90; return 'took'; } },
+          { label: 'Let the people keep it', detail: 'Peach gains 6 max HP. Partners heal fully.', go: (run) => { run.mario.maxHp += 6; run.mario.hp += 6; for (const p of run.partners) p.hp = p.maxHp; return 'kept'; } },
+        ],
+      }),
+      took: () => ({ text: 'A chest of coins clinks into your bag. (+90 coins)', options: [leave()] }),
+      kept: () => ({ text: 'The village cheers. Their love makes Peach stronger. (+6 max HP)', options: [leave()] }),
+    },
+  },
+  {
+    id: 'bullyBandit', title: 'Shakedown', npc: 'bandit', acts: [1, 2],
+    when: (run) => heroOf(run).id === 'bowser',
+    pages: {
+      start: () => ({
+        text: 'A Bandit tries to pick Bowser\'s pocket, then realizes who he\'s robbing. "Uh... nice shell, boss?"',
+        options: [
+          { label: 'Shake him down', detail: 'Gain 60 coins.', go: (run) => { run.coins += 60; return 'shook'; } },
+          { label: 'Hire him', detail: 'Add Minion Rally to your deck.', go: (run) => { addCard(run, 'minionRally'); return 'hired'; } },
+          leave('Wave him off'),
+        ],
+      }),
+      shook: () => ({ text: 'Bowser holds him upside down until 60 coins fall out. "GWA HA HA!"', options: [leave()] }),
+      hired: () => ({ text: '"You work for the Koopa King now." The Bandit salutes nervously. (Minion Rally added)', options: [leave()] }),
+    },
+  },
+  {
+    id: 'koopaRally', title: 'Koopa Troop Rally', npc: 'koopa', acts: [2, 3],
+    when: (run) => heroOf(run).id === 'bowser',
+    pages: {
+      start: (run) => ({
+        text: 'A squad of Koopa Troopas snaps to attention. "LORD BOWSER! What are your orders?"',
+        options: [
+          { label: 'Inspire the troops', detail: 'Bowser gains 8 max HP.', go: (r2) => { r2.mario.maxHp += 8; r2.mario.hp += 8; return 'inspired'; } },
+          { label: 'Commandeer supplies', detail: 'Gain 2 random items.', disabled: bagFull(run), go: (r2, _d, r) => { addItem(r2, rollItem(r)); addItem(r2, rollItem(r)); return 'supplies'; } },
+          { label: 'Demand tribute', detail: 'Remove a card from your deck.', go: () => 'tribute' },
+        ],
+      }),
+      inspired: () => ({ text: 'Bowser roars a speech so loud the Koopas\' shells rattle. He feels mightier than ever. (+8 max HP)', options: [leave()] }),
+      supplies: () => ({ text: 'The Koopas hand over their snacks. (Items you had no room for were left behind.)', options: [leave()] }),
+      tribute: () => ({ text: '"Take this off my hands." Choose a card to toss to the troops.', pick: { kind: 'remove', count: 1, then: 'done' }, options: [] }),
+      done: () => ({ text: 'The troops march off, singing Bowser\'s praises.', options: [leave()] }),
     },
   },
   {
