@@ -9,6 +9,7 @@ import { button, cardEl, hideTip, hpBar, showTip, statusRow, tip } from '../comp
 import { SpriteView, icon, iconFit } from '../sprite';
 import { stage } from '../stage';
 import { heroText } from '../../data/heroes';
+import { BANTER, type Banter } from '../../data/banter';
 import { sfx } from '../sfx';
 
 interface UnitView {
@@ -52,6 +53,8 @@ export class BattleView {
   /** Damage-preview badges for the selected card, by unit uid; rebuilt when `previewKey` changes. */
   private previews = new Map<string, HTMLElement>();
   private previewKey = '';
+  /** the low-HP worry line has been said this battle */
+  private worried = false;
 
   constructor(
     private app: App,
@@ -177,6 +180,21 @@ export class BattleView {
     await this.wait(600);
     this.busy = false;
     this.refreshAll();
+    if (this.c.kind === 'boss') this.banter(this.c.livingPartners(), 'boss');
+  }
+
+  /** A partner says a short line (one of them, picked at random), as a speech bubble that doesn't block play. */
+  private banter(who: Unit[], kind: keyof Banter, chance = 1) {
+    const speakers = who.filter((u) => !u.dead && BANTER[u.id as keyof typeof BANTER]);
+    if (!speakers.length || Math.random() > chance || this.fx.querySelector('.speech')) return;
+    const u = speakers[Math.floor(Math.random() * speakers.length)];
+    const lines = BANTER[u.id as keyof typeof BANTER][kind];
+    const v = this.views.get(u.uid);
+    if (!v) return;
+    const el = h('div.speech', null, heroText(lines[Math.floor(Math.random() * lines.length)]));
+    this.placeAbove(el, v, 26);
+    this.fx.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
   }
 
   // ---------- rendering ----------
@@ -576,12 +594,15 @@ export class BattleView {
       await this.castAnim(src, d);
     }
     if (this.dead) return;
+    const aliveBefore = c.livingEnemies().length;
     c.play(idx, targetUid, nice);
     if (nice) this.niceFx(target ?? this.centerEnemy() ?? c.mario);
     this.renderHand();
     await this.playEvents(c.takeEvents());
     if (travelled) await this.goHome(src);
     this.views.get(src.uid)?.sprite.play(this.basePose(src));
+    if (d.combo && c.comboActive(d.combo)) this.banter([c.partner(d.combo)!], 'combo');
+    else if (src !== c.mario && c.livingEnemies().length < aliveBefore && !c.isOver()) this.banter([src], 'kill', 0.6);
     this.afterAction();
   }
 
@@ -671,6 +692,10 @@ export class BattleView {
     this.refreshAll();
     if (c.isOver()) return this.finish();
     this.banner(`Turn ${c.turn}`, 'player');
+    if (!this.worried && c.mario.hp < c.mario.maxHp * 0.3) {
+      this.worried = true;
+      this.banter(c.livingPartners(), 'worry');
+    }
     this.renderHand();
     this.busy = false;
     this.refreshAll();

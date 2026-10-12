@@ -1114,6 +1114,39 @@ b {
   75% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -20px); }
 }
+.speech {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  max-width: 220px;
+  background: #fff;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.2;
+  text-align: center;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+  animation: speechpop 2.2s ease-out forwards;
+  z-index: 5;
+}
+.speech::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: var(--ink);
+}
+@keyframes speechpop {
+  0% { opacity: 0; transform: translate(-50%, -90%) scale(0.7); }
+  10% { opacity: 1; transform: translate(-50%, -100%) scale(1.05); }
+  15% { transform: translate(-50%, -100%) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}
 .pop {
   position: absolute;
   transform: translate(-50%, -50%);
