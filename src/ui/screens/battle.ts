@@ -303,7 +303,8 @@ export class BattleView {
     if (!u) return '';
     if (u.side === 'ally') {
       const p = u.uid === 'mario' ? null : PARTNERS[u.id as keyof typeof PARTNERS];
-      return `<b>${u.name}</b><br>HP ${Math.max(0, u.hp)}/${u.maxHp}${u.block ? ` · Block ${u.block}` : ''}${p ? `<br>${p.blurb}` : ''}${u.dead ? "<br><i>KO'd: cards can't be played</i>" : ''}`;
+      const rank = p ? (this.run.partners.find((x) => x.id === p.id)?.rank ?? 0) : 0;
+      return `<b>${u.name}</b><br>HP ${Math.max(0, u.hp)}/${u.maxHp}${u.block ? ` · Block ${u.block}` : ''}${p ? `<br>${p.blurb}<br><b>${p.passive.name}:</b> ${p.passive.desc(p.passive.values[rank])}${u.dead ? ' (inactive)' : ''}` : ''}${u.dead ? "<br><i>KO'd: cards can't be played</i>" : ''}`;
     }
     const def = ENEMIES[u.id];
     const traits = u.traits.filter((t) => ['flying', 'spiky', 'shelled', 'boss'].includes(t));

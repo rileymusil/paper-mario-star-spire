@@ -236,6 +236,10 @@ export class Combat {
     if (this.run.paradeBuff > 0) this.star = Math.min(this.starMax, this.star + 2);
     if (this.has('chillOut')) for (const e of this.enemies) this.applyStatus(e, 'shrunk', 1);
     if (this.has('fpPlus')) this.maxFp += 1;
+    const spark = this.passive('watt');
+    if (spark) this.mario.st.static = (this.mario.st.static ?? 0) + spark;
+    const cloud = this.passive('lakilester');
+    if (cloud) for (const e of this.rng.sample(this.livingEnemies(), cloud)) this.applyStatus(e, 'shrunk', 1);
     for (const e of this.enemies) this.chooseIntent(e);
     this.startTurn();
     this.events = [];
@@ -385,6 +389,11 @@ export class Combat {
       if (this.has('damageDodge')) for (const p of this.livingPartners()) this.gainBlock(p, 5);
     }
     if (this.has('happyHeart')) this.heal(this.mario, 1);
+    const nanny = this.passive('sushie');
+    if (nanny) {
+      const hurt = this.livingAllies().filter((a) => a.hp < a.maxHp).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (hurt) this.heal(hurt, nanny);
+    }
     if (this.powers.rainDance) for (const a of this.livingAllies()) this.gainBlock(a, this.powers.rainDance);
     if (this.powers.poltergeist) for (const e of this.livingEnemies()) this.attack(undefined, e, this.powers.poltergeist, { pierce: true }, false);
     if (this.powers.tattleLog) {
@@ -394,6 +403,8 @@ export class Combat {
     if (this.turn > 1) this.gainStar(1);
     let n = 5 + (this.powers.expressMail ?? 0);
     if (this.turn === 1 && this.has('firstAttack')) n += 2;
+    if (this.turn === 1) n += this.passive('goombario');
+    if (this.turn % 3 === 0) n += this.passive('parakarry');
     this.draw(n);
     this.checkEnd();
   }
@@ -467,6 +478,7 @@ export class Combat {
     }
     this.hand = keep;
     if (this.powers.shellFortress) this.gainBlock(this.mario, this.powers.shellFortress);
+    this.gainBlock(this.mario, this.passive('kooper'));
     if (this.powers.happyHeart) this.heal(this.mario, this.powers.happyHeart);
     for (const a of this.livingAllies()) {
       this.tickRegen(a);
@@ -686,7 +698,9 @@ export class Combat {
   hit(src: Unit | undefined, target: Unit, base: number, opts: AttackOpts, first: boolean, guarded = false): number {
     if (target.dead) return 0;
     let d = this.calc(src, target, base, opts, first);
-    if (target.st.hidden || (src?.side === 'enemy' && this.has('prettyLucky') && this.rng.chance(0.1))) {
+    const veil = target.uid === 'mario' ? this.passive('bow') : 0;
+    const lucky = src?.side === 'enemy' && ((this.has('prettyLucky') && this.rng.chance(0.1)) || (veil > 0 && this.rng.chance(veil / 100)));
+    if (target.st.hidden || lucky) {
       this.emit({ t: 'hit', target: target.uid, src: src?.uid, dmg: 0, blocked: 0, miss: true });
       return 0;
     }
@@ -732,6 +746,8 @@ export class Combat {
         this.emit({ t: 'text', target: u.uid, text: `+${u.mem.stolen} coins back`, color: '#ffd84a' });
         u.mem.stolen = 0;
       }
+      const blast = this.passive('bombette');
+      if (blast) for (const e of this.livingEnemies()) this.attack(undefined, e, blast, { pierce: true }, false);
       if (this.powers.kaboom) {
         const n = this.powers.kaboom;
         for (const e of this.livingEnemies()) this.attack(undefined, e, n, { pierce: true }, false);
@@ -933,6 +949,14 @@ export class Combat {
   }
 
   /** Partner unit for a partner id, if on the field. */
+  /** Strength of a partner's passive (by rank) while it is fielded and conscious, else 0. */
+  passive(id: PartnerId): number {
+    const u = this.partner(id);
+    if (!u || u.dead) return 0;
+    const rank = this.run.partners.find((p) => p.id === id)?.rank ?? 0;
+    return PARTNERS[id].passive.values[rank];
+  }
+
   partner(id: PartnerId): Unit | undefined {
     return this.allies.find((u) => u.id === id);
   }

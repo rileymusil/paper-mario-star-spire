@@ -3,6 +3,7 @@ import type { Reward, RunState, ScreenState } from '../../engine/types';
 import { advanceAct, completeNode, recruit } from '../../engine/run';
 import { ACTS } from '../../data/acts';
 import { BADGES, PARTNERS } from '../../data/registry';
+import { passiveText } from '../../data/partners';
 import { h } from '../dom';
 import { badgeTip, button, cardEl, modal, tip } from '../components';
 import { iconFit, portrait } from '../sprite';
@@ -46,7 +47,7 @@ export function renderBossReward(app: App, run: RunState, s: Extract<ScreenState
     let body: HTMLElement;
     if (ch.kind === 'partner') {
       const p = PARTNERS[ch.id];
-      body = h('div.bchoice-body', null, portrait(p.sprite, 90, true), h('b', null, `${p.name} joins!`), h('small', null, p.blurb));
+      body = h('div.bchoice-body', null, portrait(p.sprite, 90, true), h('b', null, `${p.name} joins!`), h('small', null, p.blurb), h('small.passive-line', null, passiveText(p, 0)));
     } else if (ch.kind === 'rankup') {
       body = h('div.bchoice-body', null, iconFit('i_superblock', 70), h('b', null, 'Rank up a partner'), h('small', null, 'Free rank-up, no Super Block needed.'));
     } else {

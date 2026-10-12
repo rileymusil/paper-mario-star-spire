@@ -192,6 +192,39 @@ describe('combat rules', () => {
     expect(jp.mario.dmg).toBe(3);
   });
 
+  it('partner passives apply while the partner is up, scaled by rank', () => {
+    const withPartner = (id: string, rank: 0 | 1 | 2 = 0) => (run: RunState) => {
+      run.partners.push({ id: id as any, hp: 20, maxHp: 20, rank, field: true });
+    };
+    // Kooper: Mario gains Block at end of turn
+    const k = fight(['goomba']);
+    k.endTurn();
+    expect(k.mario.block).toBe(2);
+    // ...but not while Kooper is KO'd
+    const k2 = fight(['goomba']);
+    k2.loseHp(k2.allies[1], 999);
+    k2.endTurn();
+    expect(k2.mario.block).toBe(0);
+    // Watt (Ultra): Static at battle start
+    expect(fight(['goomba'], withPartner('watt', 2)).mario.st.static).toBe(3);
+    // Goombario: an extra card on turn 1
+    expect(fight(['goomba'], withPartner('goombario')).hand.length).toBe(6);
+    // Lakilester (Super): two enemies start Shrunk
+    const l = fight(['goomba', 'goomba', 'goomba'], withPartner('lakilester', 1));
+    expect(l.enemies.filter((e) => e.st.shrunk).length).toBe(2);
+    // Bombette: a defeated enemy blasts the rest
+    const b = fight(['goomba', 'goomba'], withPartner('bombette'));
+    const [g1, g2] = b.enemies;
+    g2.hp = g2.maxHp = 30;
+    b.loseHp(g1, 999);
+    expect(g2.hp).toBe(28);
+    // Sushie: heals the most-hurt ally at turn start
+    const s = fight(['goomba'], withPartner('sushie'));
+    s.mario.hp = 10;
+    s.startTurn();
+    expect(s.mario.hp).toBe(12);
+  });
+
   it('card damage numbers follow the source unit modifiers', () => {
     const c = fight(['goomba']);
     const jump = c.hand[give(c, 'jump')];

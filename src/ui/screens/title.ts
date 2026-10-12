@@ -1,6 +1,6 @@
 import type { App } from '../app';
 import type { PartnerId } from '../../engine/types';
-import { PARTNER_LIST } from '../../data/partners';
+import { PARTNER_LIST, passiveText } from '../../data/partners';
 import { ACTS } from '../../data/acts';
 import { CARDS } from '../../data/registry';
 import { h } from '../dom';
@@ -52,6 +52,7 @@ export function renderStarter(app: App): HTMLElement {
       h('div.starter-name', { style: { color: p.color } }, unlocked ? p.name : '???'),
       unlocked ? h('div.starter-hp', null, `HP ${p.hp}`) : null,
       h('div.starter-blurb', null, unlocked ? p.blurb : unlockHint(p.id)),
+      unlocked ? h('div.passive-line', null, passiveText(p, 0)) : null,
     );
     if (unlocked) {
       el.addEventListener('click', () => {

@@ -70,6 +70,8 @@ export interface PartnerDef {
   color: string;
   blurb: string;
   starters: string[];
+  /** always-on perk while fielded and not KO'd; values[rank] is its strength */
+  passive: { name: string; values: [number, number, number]; desc: (n: number) => string };
 }
 
 export interface ItemDef {

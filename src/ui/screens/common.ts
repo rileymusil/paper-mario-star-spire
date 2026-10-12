@@ -1,7 +1,7 @@
 import type { App } from '../app';
 import type { CardInst, PartnerId, Reward, RunState } from '../../engine/types';
 import { BADGES, CARDS, ITEMS, PARTNERS } from '../../data/registry';
-import { RANK_NAMES } from '../../data/partners';
+import { RANK_NAMES, passiveText } from '../../data/partners';
 import { claimBadge, claimCard, claimCoins, claimItem, claimSuperBlock, parseCardId, rankUp, setField } from '../../engine/run';
 import { h } from '../dom';
 import { badgeTip, button, cardEl, deckGrid, itemTip, modal, tip } from '../components';
@@ -144,6 +144,7 @@ export function partyModal(app: App, run: RunState, onDone?: () => void) {
             h('div.pname', null, PARTNERS[p.id].name),
             h('div.prank', null, `${RANK_NAMES[p.rank]} · HP ${p.hp}/${p.maxHp}`),
             h('div.pstate', null, p.field ? 'Fighting' : 'Reserve'),
+            h('div.passive-line', null, passiveText(PARTNERS[p.id], p.rank)),
           ),
         ),
       ),
@@ -183,6 +184,7 @@ export function rankUpModal(app: App, run: RunState, free: boolean, onDone: (id:
           h('div.pname', null, PARTNERS[p.id].name),
           h('div.prank', null, p.rank >= 2 ? 'Ultra (max)' : `${RANK_NAMES[p.rank]} → ${RANK_NAMES[p.rank + 1]}`),
           h('div.pstate', null, p.rank === 0 ? '+6 HP, all their cards upgraded' : p.rank === 1 ? '+6 HP, +2 Strength in battle' : ''),
+          p.rank < 2 ? h('div.passive-line', null, `${PARTNERS[p.id].passive.name}: ${PARTNERS[p.id].passive.values[p.rank]} → ${PARTNERS[p.id].passive.values[p.rank + 1]}`) : null,
         ),
       ),
     ),

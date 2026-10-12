@@ -1,6 +1,7 @@
 import type { App } from '../app';
 import type { RunState, ScreenState } from '../../engine/types';
 import { PARTNERS } from '../../data/registry';
+import { passiveText } from '../../data/partners';
 import { completeNode, recruit } from '../../engine/run';
 import { h } from '../dom';
 import { button, cardEl } from '../components';
@@ -50,6 +51,7 @@ export function renderPartnerNode(app: App, run: RunState, s: Extract<ScreenStat
       h('div.recruit-name', { style: { color: p.color } }, p.name),
       h('div.recruit-hp', null, `HP ${p.hp}`),
       h('div.recruit-blurb', null, p.blurb),
+      h('div.passive-line', null, passiveText(p, 0)),
       h('div.cardrow.mini', null, ...p.starters.map((c) => cardEl({ id: c, up: false }))),
     );
   });

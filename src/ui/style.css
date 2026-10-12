@@ -1630,6 +1630,12 @@ b {
 .map-node.next:hover {
   transform: translate(-50%, -50%) scale(1.15);
 }
+.passive-line {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6a3fb0;
+  line-height: 1.25;
+}
 .map-node.next.armed {
   transform: translate(-50%, -50%) scale(1.25);
   animation: none;
