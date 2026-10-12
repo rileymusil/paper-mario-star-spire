@@ -676,6 +676,92 @@ const luigiBoss: EnemyDef = {
   ai: cycle('jump', 'cheer', 'jump', 'patch'),
 };
 
+// ---------- new foes from the custom sheets ----------
+
+const cheepCheep: EnemyDef = {
+  id: 'cheepcheep', name: 'Cheep Cheep', sprite: 'cheepcheep', hp: [11, 13],
+  desc: 'Flops at you, and its splash makes your team Soft.',
+  moves: {
+    flop: atk('Flop', 5),
+    splash: atk('Splash', 3, 'all', { contact: false, anim: 'cast', apply: [['soft', 1, 'target']] }),
+  },
+  ai: cycle('flop', 'splash', 'flop'),
+};
+
+const mander: EnemyDef = {
+  id: 'mander', name: 'Mander', sprite: 'mander', hp: [18, 21],
+  desc: 'A fire salamander. Its Flame Spit makes you Burn.',
+  moves: {
+    bite: atk('Bite', 8),
+    spit: atk('Flame Spit', 5, 'random', { contact: false, anim: 'shoot', apply: [['burn', 2, 'target']] }),
+  },
+  ai: rand(['bite', 2], ['spit', 2]),
+};
+
+const cherbil: EnemyDef = {
+  id: 'cherbil', name: 'Cherbil', sprite: 'cherbil', hp: [16, 19], traits: ['flying'],
+  desc: "Floating gas cloud (Flying). Its poison puff Shrinks your team.",
+  moves: {
+    gas: atk('Poison Puff', 4, 'all', { contact: false, anim: 'cast', apply: [['shrunk', 1, 'target']] }),
+    bump: atk('Bump', 7),
+  },
+  ai: cycle('gas', 'bump', 'bump'),
+};
+
+const slugger: EnemyDef = {
+  id: 'slugger', name: 'Slugger', sprite: 'slugger', hp: [24, 28],
+  desc: 'Swings a big bat. Its Home Run knocks a Dazed card into your deck.',
+  moves: {
+    swing: atk('Big Swing', 12, 'mario'),
+    homer: atk('Home Run', 8, 'random', { fx: (c) => c.addCardToDraw('dazed') }),
+    wind: { name: 'Wind Up', kind: 'buff', tgt: 'self', anim: 'none', block: 6, apply: [['strength', 2, 'self']] },
+  },
+  ai: cycle('wind', 'swing', 'homer'),
+};
+
+const dimentioClone: EnemyDef = {
+  id: 'dimentio_clone', name: 'Dimentio Copy', sprite: 'dimentio', tint: 'opacity(0.65) saturate(0.6)', size: 0.6, hp: [18, 20], traits: ['minion', 'flying'],
+  desc: 'A magical copy. Vanishes when Dimentio falls.',
+  moves: { zap: atk('Copy Zap', 6, 'random', { contact: false, anim: 'shoot' }) },
+  ai: () => 'zap',
+};
+
+const dimentio: EnemyDef = {
+  id: 'dimentio', name: 'Dimentio', sprite: 'dimentio', hp: [200, 200], traits: ['boss', 'flying'],
+  desc: 'Boss. Master of dimensions: splits into copies, teleports, and traps partners in a Dimension Box.',
+  moves: {
+    copy: {
+      name: 'Copy Clone', kind: 'summon', tgt: 'none', anim: 'cast',
+      fx: (c) => {
+        c.summon('dimentio_clone');
+      },
+    },
+    magic: atk('Magic Burst', 8, 'random', { hits: 2, contact: false, anim: 'shoot' }),
+    box: atk('Dimension Box', 10, 'partner', { contact: false, anim: 'cast', apply: [['dizzy', 2, 'target']] }),
+    teleport: { name: 'Teleport', kind: 'defend', tgt: 'self', anim: 'none', block: 10, apply: [['vanish', 1, 'self']] },
+    blast: atk('Dimension Blast', 12, 'all', { contact: false, anim: 'cast' }),
+  },
+  ai: (self, c) => {
+    self.mem.turn = (self.mem.turn ?? -1) + 1;
+    if (self.mem.turn === 0) return 'copy';
+    const r = ['magic', 'box', 'teleport', 'copy'][(self.mem.turn - 1) % 4];
+    if (r === 'copy' && minions(c) >= 2) return 'magic';
+    return r;
+  },
+  phase2: {
+    name: 'Ciao!',
+    desc: 'Splits into more copies and blasts your whole team.',
+    enter: (_self, c) => {
+      c.summon('dimentio_clone');
+      c.summon('dimentio_clone');
+    },
+    ai: (self) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      return ['blast', 'box', 'magic', 'teleport'][self.mem.turn % 4];
+    },
+  },
+};
+
 // ---------- variants with new mechanics ----------
 
 const thornyPiranha: EnemyDef = {
@@ -792,6 +878,10 @@ export const ENEMY_LIST: EnemyDef[] = [
   bowser, kammy,
   thornyPiranha, cardShark, phantomBoo, fireBro, bobulk, koopatrol, pickpocket,
   marioBoss, luigiBoss,
+  cheepCheep, mander, cherbil, slugger, dimentioClone, dimentio,
+  scaled(mander, 'mander3', 1.5, 3, { name: 'Mander Veteran' }),
+  scaled(cherbil, 'cherbil3', 1.5, 3),
+  scaled(slugger, 'slugger3', 1.4, 3, { name: 'Slugger Ace' }),
   scaled(fireBro, 'firebro3', 1.2, 3),
   scaled(phantomBoo, 'boo_phantom3', 1.3, 3),
 ];
