@@ -584,9 +584,11 @@ export class Combat {
     }
     if (move.block) this.gainBlock(e, move.block);
     if (move.dmg) {
+      let dealt = 0;
       for (const t of targets) {
-        this.attack(e, t, move.dmg, { hits: move.hits ?? 1, contact: move.contact ?? true }, true, guarded);
+        dealt += this.attack(e, t, move.dmg, { hits: move.hits ?? 1, contact: move.contact ?? true }, true, guarded);
       }
+      if (move.drain && dealt > 0) this.heal(e, dealt);
     }
     for (const [id, n, to] of move.apply ?? []) {
       const list =
@@ -784,6 +786,12 @@ export class Combat {
         this.emit({ t: 'text', target: u.uid, text: `+${u.mem.stolen} coins back`, color: '#ffd84a' });
         u.mem.stolen = 0;
       }
+      if (u.mem.cards?.length) {
+        this.discard.push(...u.mem.cards);
+        this.emit({ t: 'text', target: u.uid, text: 'Cards recovered!', color: '#9fe3ff' });
+        this.emit({ t: 'cards' });
+        u.mem.cards = [];
+      }
       const blast = this.passive('bombette');
       if (blast) for (const e of this.livingEnemies()) this.attack(undefined, e, blast, { pierce: true }, false);
       if (this.powers.kaboom) {
@@ -901,6 +909,23 @@ export class Combat {
     u.mem.stolen = (u.mem.stolen ?? 0) + got;
     this.emit({ t: 'coins', n: -got });
     this.emit({ t: 'text', target: 'mario', text: `-${got} coins!`, color: '#ffd84a' });
+  }
+
+  /** A thief takes a random card from the draw pile (or discard) until it's defeated. */
+  stealCard(thief: Unit): CardInst | null {
+    const pile = this.drawPile.length ? this.drawPile : this.discard;
+    if (!pile.length) return null;
+    const inst = pile.splice(this.rng.int(0, pile.length - 1), 1)[0];
+    (thief.mem.cards ??= []).push(inst);
+    this.emit({ t: 'text', target: thief.uid, text: `Stole ${CARDS[inst.id].name}!`, color: '#ffb0b0' });
+    this.emit({ t: 'cards' });
+    return inst;
+  }
+
+  /** Puts a status/curse card into the discard pile. */
+  addCardToDiscard(id: string) {
+    this.discard.push({ uid: `t${this.uidN++}`, id, up: false });
+    this.emit({ t: 'cards' });
   }
 
   /** Puts a status/curse card into the draw pile. */

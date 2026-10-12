@@ -110,6 +110,7 @@ export class BattleView {
     const L = LAYOUTS[stage().orient];
     const def = u.side === 'enemy' ? ENEMIES[u.id] : null;
     const sprite = new SpriteView(u.sprite, L.unitScale * (def?.size ?? 1), u.side === 'ally');
+    if (def?.tint) sprite.inner.style.filter = def.tint;
     // Keep big bosses below the HUD so their intent stays visible.
     const cap = L.maxH;
     if (sprite.height > cap) {

@@ -612,6 +612,96 @@ const kammy: EnemyDef = {
   ai: cycle('blast', 'empower', 'blast', 'heal'),
 };
 
+// ---------- variants with new mechanics ----------
+
+const thornyPiranha: EnemyDef = {
+  id: 'piranha_thorn', name: 'Thorny Piranha', sprite: 'piranha', tint: 'hue-rotate(250deg) saturate(1.3)', hp: [16, 19], traits: ['spiky'],
+  desc: 'Spiky. Spits Thorns into your discard pile: junk cards that hurt if you hold them.',
+  moves: {
+    bite: atk('Bite', 8),
+    spit: atk('Thorn Spit', 4, 'random', { contact: false, anim: 'shoot', fx: (c) => { c.addCardToDiscard('thorns'); c.addCardToDiscard('thorns'); } }),
+  },
+  ai: cycle('spit', 'bite', 'bite'),
+};
+
+const cardShark: EnemyDef = {
+  id: 'card_shark', name: 'Card Shark', sprite: 'bandit', tint: 'hue-rotate(170deg) saturate(1.4)', hp: [17, 20],
+  desc: 'Steals cards from your draw pile, then runs. Defeat it to get them back.',
+  moves: {
+    swipe: atk('Card Swipe', 5, 'mario', { fx: (c, self) => void c.stealCard(self) }),
+    shuffle: { name: 'Shuffle Off', kind: 'defend', tgt: 'self', block: 9, anim: 'none', fx: (c, self) => void c.stealCard(self) },
+    escape: { name: 'Escape', kind: 'escape', tgt: 'none', anim: 'none', fx: (c, self) => c.flee(self) },
+  },
+  ai: (self) => {
+    self.mem.turn = (self.mem.turn ?? -1) + 1;
+    return ['swipe', 'shuffle', 'escape'][Math.min(self.mem.turn, 2)];
+  },
+};
+
+const phantomBoo: EnemyDef = {
+  id: 'boo_phantom', name: 'Phantom Boo', sprite: 'boo', tint: 'sepia(1) hue-rotate(240deg) saturate(4) brightness(0.8)', hp: [22, 26],
+  desc: 'Its Soul Drain heals it for the damage it deals.',
+  moves: {
+    drain: atk('Soul Drain', 8, 'random', { drain: true }),
+    vanish: { name: 'Vanish', kind: 'defend', tgt: 'self', anim: 'none', apply: [['vanish', 1, 'self']] },
+    wail: atk('Wail', 4, 'all', { contact: false, anim: 'cast', apply: [['shrunk', 1, 'target']] }),
+  },
+  ai: rand(['drain', 3], ['wail', 1], ['vanish', 1]),
+};
+
+const fireBro: EnemyDef = {
+  id: 'firebro', name: 'Fire Bro', sprite: 'hammerbro', tint: 'sepia(1) saturate(5) hue-rotate(-35deg) contrast(1.1)', hp: [50, 54],
+  desc: 'Elite. Fireballs Burn whoever they hit.',
+  moves: {
+    fireball: atk('Fireball', 6, 'random', { hits: 2, contact: false, anim: 'shoot', apply: [['burn', 2, 'target']] }),
+    volley: atk('Fire Volley', 5, 'all', { contact: false, anim: 'cast', apply: [['burn', 1, 'target']] }),
+    hammer: atk('Hammer Throw', 12, 'random', { contact: false, anim: 'shoot' }),
+    psych: { name: 'Psych Up', kind: 'buff', tgt: 'self', anim: 'cast', apply: [['strength', 2, 'self']] },
+  },
+  ai: cycle('fireball', 'hammer', 'volley', 'psych'),
+};
+
+const bobulk: EnemyDef = {
+  id: 'bobulk', name: 'Bob-ulk', sprite: 'bobomb', tint: 'grayscale(1) invert(0.85) brightness(1.05)', size: 1.6, hp: [56, 60], traits: ['explosive'],
+  desc: 'Elite. A giant Bob-omb. At half HP its fuse lights: finish it that turn or it blows up your whole team.',
+  moves: {
+    slam: atk('Body Slam', 11),
+    stomp: atk('Ground Pound', 6, 'all', { contact: false, anim: 'jump' }),
+    brace: { name: 'Brace', kind: 'defend', tgt: 'self', block: 12, anim: 'none' },
+    explode: { name: 'Mega Blast', kind: 'explode', dmg: 22, tgt: 'all', anim: 'lunge', contact: false, fx: (c, self) => explode(c, self) },
+  },
+  ai: (self) => {
+    if (self.mem.lit) return 'explode';
+    self.mem.turn = (self.mem.turn ?? -1) + 1;
+    return ['slam', 'stomp', 'brace'][self.mem.turn % 3];
+  },
+  onHurt: (self, c) => {
+    if (self.hp <= self.maxHp / 2) lightFuse(self, c);
+  },
+};
+
+const koopatrol: EnemyDef = {
+  id: 'koopatrol', name: 'Koopatrol', sprite: 'koopa', tint: 'grayscale(0.7) brightness(0.65) contrast(1.3)', size: 1.15, hp: [38, 42], traits: ['shelled', 'spiky'], armor: 3,
+  desc: 'Spiked shell (3 armor): jumping on it hurts. Pierce or Flip it.',
+  moves: {
+    charge: atk('Shell Charge', 14),
+    spin: atk('Spiked Spin', 6, 'random', { hits: 2 }),
+    guard: { name: 'Shell Guard', kind: 'defend', tgt: 'self', block: 12, anim: 'none', apply: [['strength', 1, 'self']] },
+  },
+  ai: cycle('charge', 'spin', 'guard'),
+};
+
+const pickpocket: EnemyDef = {
+  id: 'ninji_thief', name: 'Pickpocket Ninji', sprite: 'ninji', tint: 'sepia(1) hue-rotate(-30deg) saturate(2) brightness(0.8)', hp: [24, 28],
+  desc: 'Steals cards from your draw pile. Defeat it to get them back.',
+  moves: {
+    pick: atk('Pickpocket', 6, 'mario', { fx: (c, self) => void c.stealCard(self) }),
+    flurry: atk('Flurry', 4, 'random', { hits: 3 }),
+    smoke: { name: 'Smoke Screen', kind: 'defend', tgt: 'self', block: 10, anim: 'none', apply: [['vanish', 1, 'self']] },
+  },
+  ai: cycle('pick', 'flurry', 'pick', 'smoke'),
+};
+
 const goombaBro = scaled(goomba, 'goomba3', 1.8, 4, { name: 'Gloomba' });
 
 export const ENEMY_LIST: EnemyDef[] = [
@@ -636,4 +726,7 @@ export const ENEMY_LIST: EnemyDef[] = [
   scaled(swooper, 'swooper3', 1.5, 3),
   goombaBro,
   bowser, kammy,
+  thornyPiranha, cardShark, phantomBoo, fireBro, bobulk, koopatrol, pickpocket,
+  scaled(fireBro, 'firebro3', 1.2, 3),
+  scaled(phantomBoo, 'boo_phantom3', 1.3, 3),
 ];

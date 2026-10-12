@@ -39,6 +39,8 @@ export interface MoveDef {
   /** statuses applied: [status, amount, to] */
   apply?: [StatusId, number, 'target' | 'self' | 'enemies' | 'allies'][];
   contact?: boolean;
+  /** the attacker heals for the HP it takes */
+  drain?: boolean;
   anim?: 'lunge' | 'jump' | 'shoot' | 'cast' | 'none';
   /** custom effect after damage/statuses */
   fx?: (c: Combat, self: Unit, target: Unit | undefined) => void;
@@ -54,6 +56,8 @@ export interface EnemyDef {
   armor?: number;
   /** extra scale multiplier on top of sprite scale */
   size?: number;
+  /** CSS filter that recolors a shared sprite for a variant (e.g. 'hue-rotate(250deg)') */
+  tint?: string;
   moves: Record<string, MoveDef>;
   ai: (self: Unit, c: Combat) => string;
   init?: (self: Unit, c: Combat) => void;

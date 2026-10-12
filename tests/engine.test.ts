@@ -270,6 +270,47 @@ describe('combat rules', () => {
     expect(cardPool(run, 'uncommon')).toContain('shellBomb');
   });
 
+  it('new enemy mechanics: drain, card theft, thorns, Bob-ulk', () => {
+    // Phantom Boo heals for what it drains
+    const d = fight(['boo_phantom']);
+    const boo = d.enemies[0];
+    boo.hp = 5;
+    d.setIntent(boo, 'drain');
+    d.enemyAct(boo.uid, false);
+    expect(boo.hp).toBe(5 + 8);
+    // Card Shark steals from the draw pile and gives it back when defeated
+    const s = fight(['card_shark']);
+    const shark = s.enemies[0];
+    const total = () => s.drawPile.length + s.discard.length + s.hand.length;
+    const before = total();
+    s.setIntent(shark, 'swipe');
+    s.enemyAct(shark.uid, false);
+    expect(total()).toBe(before - 1);
+    expect(shark.mem.cards).toHaveLength(1);
+    s.loseHp(shark, 999);
+    expect(total()).toBe(before);
+    // Thorny Piranha adds Thorns to the discard pile, and holding one hurts
+    const t = fight(['piranha_thorn']);
+    t.setIntent(t.enemies[0], 'spit');
+    t.enemyAct(t.enemies[0].uid, false);
+    expect(t.discard.filter((x) => x.id === 'thorns')).toHaveLength(2);
+    t.hand = [{ uid: 'th', id: 'thorns', up: false }];
+    const hp = t.mario.hp;
+    t.endTurn();
+    expect(t.mario.hp).toBe(hp - 1);
+    expect(t.exhaustPile.some((x) => x.id === 'thorns')).toBe(true);
+    // Bob-ulk lights at half HP and its blast hits the whole team
+    const b = fight(['bobulk']);
+    const bulk = b.enemies[0];
+    b.hit(b.mario, bulk, Math.ceil(bulk.maxHp / 2) + 1, { pierce: true }, true);
+    expect(bulk.mem.lit).toBe(true);
+    expect(bulk.intent!.move).toBe('explode');
+    const team = b.allies.map((a) => a.hp);
+    b.enemyAct(bulk.uid, false);
+    b.allies.forEach((a, i) => expect(a.hp).toBeLessThan(team[i]));
+    expect(b.isOver()).toBe(true);
+  });
+
   it('bosses enter their second phase once, at half HP', () => {
     for (const act of ACTS) {
       for (const boss of act.bosses) {

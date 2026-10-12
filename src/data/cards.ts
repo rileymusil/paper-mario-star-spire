@@ -896,6 +896,12 @@ export const CARD_LIST: CardDef[] = [
     play: () => {},
   },
   {
+    id: 'thorns', name: 'Thorns', owner: 'none', type: 'status', rarity: 'special', cost: 0, target: 'none', icon: 'b_253', unplayable: true, ethereal: true,
+    text: () => `Unplayable. Ethereal. If this is in your hand at the end of your turn, Mario loses 1 HP.`,
+    play: () => {},
+    endOfTurnInHand: (c) => c.loseHp(c.mario, 1),
+  },
+  {
     id: 'haunted', name: 'Haunted', owner: 'none', type: 'curse', rarity: 'special', cost: 0, target: 'none', icon: 'st_skull', unplayable: true,
     text: () => `Unplayable. If this is in your hand at the end of your turn, Mario loses 2 HP.`,
     play: () => {},
