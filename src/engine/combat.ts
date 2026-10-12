@@ -158,6 +158,10 @@ export class Combat {
   queue: string[] = [];
   niceCount = 0;
   damageDealt = 0;
+  /** cards played so far this turn */
+  playedThisTurn = 0;
+  /** cards drawn by Encyclopedia this turn */
+  softDraws = 0;
   private uidN = 0;
 
   constructor(
@@ -372,6 +376,8 @@ export class Combat {
 
   startTurn() {
     this.turn++;
+    this.playedThisTurn = 0;
+    this.softDraws = 0;
     this.phase = 'player';
     for (const a of this.allies) {
       a.block = 0;
@@ -395,6 +401,11 @@ export class Combat {
       if (hurt) this.heal(hurt, nanny);
     }
     if (this.powers.rainDance) for (const a of this.livingAllies()) this.gainBlock(a, this.powers.rainDance);
+    if (this.powers.overclock) for (const a of this.livingAllies()) this.applyStatus(a, 'pumped', this.powers.overclock);
+    if (this.powers.haunt) {
+      const live = this.livingEnemies();
+      if (live.length) this.applyStatus(this.rng.pick(live), 'shrunk', this.powers.haunt);
+    }
     if (this.powers.poltergeist) for (const e of this.livingEnemies()) this.attack(undefined, e, this.powers.poltergeist, { pierce: true }, false);
     if (this.powers.tattleLog) {
       const live = this.livingEnemies();
@@ -453,6 +464,7 @@ export class Combat {
       this.gainStar(1);
     }
     d.play(new Ctx(this, src, target, isAttack && nice, inst.up), inst.up);
+    this.playedThisTurn++;
     if (d.type === 'power') {
       // powers leave the deck for the rest of the fight
     } else if (d.exhaust && !(inst.up && d.exhaustUp === false)) {
@@ -716,6 +728,10 @@ export class Combat {
       this.emit({ t: 'text', target: target.uid, text: 'Woke up!' });
     }
     if (target.side === 'enemy' && d - blocked > 0 && target.hp > 0) ENEMIES[target.id].onHurt?.(target, this, d - blocked);
+    if (src?.side === 'enemy' && !src.dead && target.side === 'ally' && opts.contact !== false && this.powers.spinyTrap) {
+      this.emit({ t: 'text', target: src.uid, text: 'Spiny!', color: '#ff7070' });
+      this.loseHp(src, this.powers.spinyTrap);
+    }
     if (src && !src.dead && opts.contact !== false && target.st.static && src.side !== target.side) {
       this.emit({ t: 'text', target: src.uid, text: 'Zap!', color: '#ffe95a' });
       this.loseHp(src, target.st.static);
@@ -807,6 +823,10 @@ export class Combat {
     u.st[id] = (u.st[id] ?? 0) + n;
     if ((u.st[id] ?? 0) <= 0) delete u.st[id];
     this.emit({ t: 'status', target: u.uid, id, n });
+    if (id === 'soft' && n > 0 && u.side === 'enemy' && this.powers.encyclopedia && this.phase === 'player' && this.softDraws < 2) {
+      this.softDraws++;
+      this.draw(this.powers.encyclopedia);
+    }
     if (id === 'sleep' || id === 'dizzy') this.emit({ t: 'text', target: u.uid, text: id === 'sleep' ? 'Asleep!' : 'Dizzy!' });
   }
 
@@ -866,6 +886,15 @@ export class Combat {
     const inst: CardInst = { uid: `t${this.uidN++}`, id, up: false };
     this.drawPile.splice(this.rng.int(0, this.drawPile.length), 0, inst);
     this.emit({ t: 'cards' });
+  }
+
+  /** Move a random card from the discard pile back to the hand, if there's room. */
+  recoverDiscard(): CardInst | null {
+    if (!this.discard.length || this.hand.length >= HAND_MAX) return null;
+    const inst = this.discard.splice(this.rng.int(0, this.discard.length - 1), 1)[0];
+    this.hand.push(inst);
+    this.emit({ t: 'cards' });
+    return inst;
   }
 
   addCardToHand(id: string, up = false, free = false): CardInst {

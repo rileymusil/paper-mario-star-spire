@@ -192,6 +192,66 @@ describe('combat rules', () => {
     expect(jp.mario.dmg).toBe(3);
   });
 
+  it('every card can be played, and its preview matches the real result', () => {
+    for (const card of CARD_LIST) {
+      if (card.unplayable) continue;
+      for (const up of [false, true]) {
+        const c = fight(['goomba', 'koopa', 'paragoomba'], (run) => {
+          if (card.owner !== 'mario' && card.owner !== 'none' && !run.partners.some((p) => p.id === card.owner))
+            run.partners.push({ id: card.owner, hp: 20, maxHp: 20, rank: 0, field: true });
+        });
+        for (const e of c.enemies) e.hp = e.maxHp = 60;
+        const i = give(c, card.id, up);
+        const target = card.target === 'enemy' || card.target === 'ally' ? c.targetsFor(c.hand[i])[0]?.uid : undefined;
+        const prev = c.previewPlay(i, target, false);
+        expect(prev, `${card.id} preview`).not.toBeNull();
+        const hp = new Map(c.enemies.map((e) => [e.uid, e.hp + e.block]));
+        expect(c.play(i, target, false), `${card.id} play`).toBe(true);
+        for (const e of c.enemies) {
+          const p = prev![e.uid];
+          if (!p || p.random) continue;
+          expect(hp.get(e.uid)! - (e.hp + e.block), `${card.id}${up ? '+' : ''} on ${e.id}`).toBe(Math.min(p.dmg + p.blocked, hp.get(e.uid)!));
+        }
+      }
+    }
+  });
+
+  it('new partner card mechanics', () => {
+    const add = (id: string) => (run: RunState) => void run.partners.push({ id: id as any, hp: 20, maxHp: 20, rank: 0, field: true });
+    // Encyclopedia: applying Soft draws, at most twice a turn
+    const g = fight(['goomba', 'goomba', 'goomba'], add('goombario'));
+    g.play(give(g, 'encyclopedia'), undefined, false);
+    const before = g.hand.length;
+    g.play(give(g, 'sizeUp'), undefined, false);
+    // Size Up softens 3 enemies: Encyclopedia draws 2 (capped), then Size Up draws 1
+    expect(g.hand.length).toBe(before + 3);
+    // Spiny Trap: contact attackers take damage
+    const l = fight(['goomba'], add('lakilester'));
+    l.play(give(l, 'spinyTrap', true), undefined, false);
+    const gm = l.enemies[0];
+    const ghp = gm.hp;
+    l.hit(gm, l.mario, 5, {}, true);
+    expect(gm.hp).toBe(ghp - 3);
+    // Shell Slam: damage equals Mario's Block
+    const k = fight(['goomba']);
+    k.enemies[0].hp = k.enemies[0].maxHp = 60;
+    k.mario.block = 12;
+    k.play(give(k, 'shellSlam'), k.enemies[0].uid, false);
+    expect(k.enemies[0].hp).toBe(48);
+    // Spectral Fury: +1 hit per card already played this turn
+    const b = fight(['goomba'], add('bow'));
+    b.enemies[0].hp = b.enemies[0].maxHp = 60;
+    b.play(give(b, 'guard'), undefined, false);
+    b.play(give(b, 'guard'), undefined, false);
+    b.play(give(b, 'spectralFury'), b.enemies[0].uid, false);
+    expect(b.enemies[0].hp).toBe(60 - 2 * 4);
+    // Priority Mail: drawn cards are free this turn
+    const p = fight(['goomba'], add('parakarry'));
+    const n = p.hand.length;
+    p.play(give(p, 'priorityMail'), undefined, false);
+    expect(p.hand.slice(n).every((x) => x.free)).toBe(true);
+  });
+
   it('partner passives apply while the partner is up, scaled by rank', () => {
     const withPartner = (id: string, rank: 0 | 1 | 2 = 0) => (run: RunState) => {
       run.partners.push({ id: id as any, hp: 20, maxHp: 20, rank, field: true });
