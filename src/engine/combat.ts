@@ -3,6 +3,7 @@ import type { CardDef, MoveDef } from './defs';
 import { Rng } from './rng';
 import { CARDS, ENEMIES, ITEMS, PARTNERS, SPECIALS } from '../data/registry';
 import { starLevel } from '../data/levels';
+import { cardPool } from './run';
 
 export interface AttackOpts {
   hits?: number;
@@ -297,6 +298,11 @@ export class Combat {
     return true;
   }
 
+  /** Card ids the run could find as rewards at a rarity (hero and fielded partners). */
+  rewardPool(rarity: string): string[] {
+    return cardPool(this.run, rarity);
+  }
+
   cardDef(inst: CardInst): CardDef {
     return CARDS[inst.id];
   }
@@ -409,6 +415,12 @@ export class Combat {
       if (this.has('damageDodge')) for (const p of this.livingPartners()) this.gainBlock(p, 5);
     }
     if (this.has('happyHeart')) this.heal(this.mario, 1);
+    const shield = this.passive('kammy');
+    if (shield) {
+      const live = this.livingAllies();
+      if (live.length) this.gainBlock(this.rng.pick(live), shield);
+    }
+    if (this.powers.relic) this.gainStar(this.powers.relic);
     const nanny = this.passive('sushie');
     if (nanny) {
       const hurt = this.livingAllies().filter((a) => a.hp < a.maxHp).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
@@ -505,6 +517,7 @@ export class Combat {
     this.hand = keep;
     if (this.powers.shellFortress) this.gainBlock(this.mario, this.powers.shellFortress);
     this.gainBlock(this.mario, this.passive('kooper'));
+    if (this.powers.shieldSpell) for (const a of this.livingAllies()) this.gainBlock(a, this.powers.shieldSpell);
     if (this.powers.happyHeart) this.heal(this.mario, this.powers.happyHeart);
     for (const a of this.livingAllies()) {
       this.tickRegen(a);
@@ -800,6 +813,11 @@ export class Combat {
         this.emit({ t: 'cards' });
         u.mem.cards = [];
       }
+      if (this.powers.archaeology) {
+        this.run.coins += this.powers.archaeology;
+        this.emit({ t: 'coins', n: this.powers.archaeology });
+        this.draw(1);
+      }
       const blast = this.passive('bombette');
       if (blast) for (const e of this.livingEnemies()) this.attack(undefined, e, blast, { pierce: true }, false);
       if (this.powers.kaboom) {
@@ -928,6 +946,21 @@ export class Combat {
     this.emit({ t: 'text', target: thief.uid, text: `Stole ${CARDS[inst.id].name}!`, color: '#ffb0b0' });
     this.emit({ t: 'cards' });
     return inst;
+  }
+
+  /** Coins found mid-battle (kept after the fight). */
+  gainCoins(n: number, from?: Unit) {
+    this.run.coins += n;
+    this.emit({ t: 'coins', n });
+    if (from) this.emit({ t: 'text', target: from.uid, text: `+${n} coins`, color: '#ffd84a' });
+  }
+
+  /** Put a random item in an empty item slot. */
+  gainRandomItem(from: Unit, pool = ['mushroom', 'fireflower', 'honey', 'pow', 'snowman', 'coconut', 'stonecap', 'dizzydial']): boolean {
+    const slot = this.items.indexOf(null);
+    if (slot >= 0) this.items[slot] = this.rng.pick(pool);
+    this.emit({ t: 'text', target: from.uid, text: slot >= 0 ? 'Found an item!' : 'Bag full!', color: '#fff' });
+    return slot >= 0;
   }
 
   /** Puts a status/curse card into the discard pile. */

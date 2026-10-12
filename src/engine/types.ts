@@ -1,4 +1,4 @@
-export type PartnerId = 'goombario' | 'kooper' | 'bombette' | 'parakarry' | 'bow' | 'watt' | 'sushie' | 'lakilester';
+export type PartnerId = 'goombario' | 'kooper' | 'bombette' | 'parakarry' | 'bow' | 'watt' | 'sushie' | 'lakilester' | 'kolorado' | 'kammy';
 export type Owner = 'mario' | PartnerId | 'none';
 export type Side = 'ally' | 'enemy';
 

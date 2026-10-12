@@ -355,7 +355,8 @@ function emptyTaken(r: Omit<Reward, 'taken'>): Reward {
 
 export function battleReward(run: RunState, fight: CombatKind): Reward {
   return withRng(run, 'rewards', (r) => {
-    const money = run.badges.includes('moneyMoney') ? 1.4 : 1;
+    const kol = run.partners.find((p) => p.id === 'kolorado' && p.field && p.hp > 0);
+    const money = (run.badges.includes('moneyMoney') ? 1.4 : 1) * (kol ? 1 + PARTNERS.kolorado.passive.values[kol.rank] / 100 : 1);
     const coins = Math.round((fight === 'boss' ? r.int(70, 90) : fight === 'elite' ? r.int(28, 38) : r.int(12, 20)) * money);
     const weights: [string, number][] =
       fight === 'boss' ? [['rare', 1]] : fight === 'elite' ? [['common', 50], ['uncommon', 38], ['rare', 12]] : [['common', 63], ['uncommon', 32], ['rare', 5]];

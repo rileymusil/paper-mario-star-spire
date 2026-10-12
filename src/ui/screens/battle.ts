@@ -109,7 +109,8 @@ export class BattleView {
   private addView(u: Unit): UnitView {
     const L = LAYOUTS[stage().orient];
     const def = u.side === 'enemy' ? ENEMIES[u.id] : null;
-    const sprite = new SpriteView(u.sprite, L.unitScale * (def?.size ?? 1), u.side === 'ally');
+    const size = def?.size ?? (u.side === 'ally' && u.uid !== 'mario' ? PARTNERS[u.id as keyof typeof PARTNERS]?.size : undefined) ?? 1;
+    const sprite = new SpriteView(u.sprite, L.unitScale * size, u.side === 'ally');
     if (def?.tint) sprite.inner.style.filter = def.tint;
     // Keep big bosses below the HUD so their intent stays visible.
     const cap = L.maxH;

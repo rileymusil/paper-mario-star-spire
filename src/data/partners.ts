@@ -18,6 +18,10 @@ export const PARTNER_LIST: PartnerDef[] = [
     passive: { name: 'Nanny', values: [2, 3, 4], desc: (n) => `At the start of your turn, heal the most-hurt ally ${n} HP.` } },
   { id: 'lakilester', name: 'Lakilester', sprite: 'lakilester', icon: 'p_lakilester', hp: 24, color: '#4fb6e6', blurb: 'Cloud rider. Spiny storms and crowd control.', starters: ['spinyFlip', 'cloudNine'],
     passive: { name: 'Spiny Cloud', values: [1, 2, 3], desc: (n) => `At the start of each battle, Shrink ${n} random enem${n > 1 ? 'ies' : 'y'} (1 turn).` } },
+  { id: 'kolorado', name: 'Kolorado', sprite: 'kolorado', icon: 'p_kolorado', hp: 20, color: '#b8863a', blurb: 'Archaeologist. Digs up coins, items and rare finds.', starters: ['excavate', 'pithHelmet'],
+    passive: { name: 'Treasure Hunter', values: [20, 35, 50], desc: (n) => `Battles give ${n}% more coins.` } },
+  { id: 'kammy', name: 'Kammy Koopa', sprite: 'kammy', icon: 'p_kammy', hp: 22, color: '#8a4fc0', size: 0.7, blurb: "Bowser's witch. Shields, hexes and power-up spells.", starters: ['magicBlast', 'magicBlock'],
+    passive: { name: 'Magic Shield', values: [3, 4, 5], desc: (n) => `At the start of your turn, a random ally gains ${n} Block.` } },
 ];
 
 export const RANK_NAMES = ['Normal', 'Super', 'Ultra'];

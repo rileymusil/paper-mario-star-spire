@@ -3,7 +3,7 @@ import sprites from '../src/generated/sprites.json';
 import { Combat } from '../src/engine/combat';
 import { Rng } from '../src/engine/rng';
 import { generateMap, reachable } from '../src/engine/map';
-import { cardPool, newRun, restHeal } from '../src/engine/run';
+import { battleReward, cardPool, newRun, restHeal } from '../src/engine/run';
 import { DEFAULT_META, unlockForAct } from '../src/engine/save';
 import { MAX_LEVEL, starLevel } from '../src/data/levels';
 import type { RunState } from '../src/engine/types';
@@ -403,6 +403,23 @@ describe('combat rules', () => {
     s.mario.hp = 10;
     s.startTurn();
     expect(s.mario.hp).toBe(12);
+  });
+
+  it('Kolorado and Kammy passives', () => {
+    const add = (id: string) => (run: RunState) => void run.partners.push({ id: id as any, hp: 20, maxHp: 20, rank: 0, field: true });
+    // Kammy: a random ally gains Block at the start of each turn
+    const k = fight(['goomba'], add('kammy'));
+    expect(k.allies.reduce((n, a) => n + a.block, 0)).toBe(3);
+    // Kolorado: +20% battle coins, and Archaeology pays out on kills
+    const plain = newRun({ seed: 'K', starter: 'kooper' });
+    const rich = newRun({ seed: 'K', starter: 'kooper' });
+    rich.partners.push({ id: 'kolorado', hp: 20, maxHp: 20, rank: 0, field: true });
+    expect(battleReward(rich, 'elite').coins).toBe(Math.round(battleReward(plain, 'elite').coins * 1.2));
+    const c = fight(['goomba', 'goomba'], add('kolorado'));
+    c.play(give(c, 'archaeology'), undefined, false);
+    const coins = c.run.coins;
+    c.loseHp(c.enemies[0], 999);
+    expect(c.run.coins).toBe(coins + 6);
   });
 
   it('card damage numbers follow the source unit modifiers', () => {

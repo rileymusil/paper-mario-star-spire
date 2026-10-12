@@ -825,6 +825,138 @@ export const CARD_LIST: CardDef[] = [
     },
   },
 
+  // ---------------- Kolorado ----------------
+  {
+    id: 'excavate', name: 'Excavate', owner: 'kolorado', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'p_kolorado',
+    text: (up) => `Kolorado deals {${v(up, 6, 9)}} damage. Gain {${v(up, 3, 5)}} coins.`,
+    play: (x, up) => {
+      x.attack(v(up, 6, 9), { kind: 'ground' });
+      x.c.gainCoins(v(up, 3, 5), x.src);
+    },
+  },
+  {
+    id: 'pithHelmet', name: 'Pith Helmet', owner: 'kolorado', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_238',
+    text: (up) => `Mario gains {${v(up, 5, 8)}} [Block]. Kolorado gains {${v(up, 4, 6)}} [Block].`,
+    play: (x, up) => {
+      x.block(v(up, 5, 8));
+      x.block(v(up, 4, 6), x.src);
+    },
+  },
+  {
+    id: 'digUp', name: 'Dig Up', owner: 'kolorado', type: 'skill', rarity: 'common', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'i_chest', exhaust: true,
+    text: () => `Gain a random item. Exhaust.`,
+    play: (x) => void x.c.gainRandomItem(x.src),
+  },
+  {
+    id: 'boulderRoll', name: 'Boulder Roll', owner: 'kolorado', type: 'attack', rarity: 'common', cost: 2, target: 'allEnemies', atk: 'ground', anim: 'dash', icon: 'i_coconut',
+    text: (up) => `Kolorado deals {${v(up, 7, 10)}} damage to every ground foe.`,
+    play: (x, up) => void x.attackAll(v(up, 7, 10), { kind: 'ground', contact: false }),
+  },
+  {
+    id: 'fieldNotes', name: 'Field Notes', owner: 'kolorado', type: 'skill', rarity: 'common', cost: 0, target: 'enemy', anim: 'cast', icon: 'i_book',
+    text: (up) => `Apply [Soft] {${v(up, 1, 2)}}. Draw 1 card.`,
+    play: (x, up) => {
+      x.apply('soft', v(up, 1, 2));
+      x.draw(1);
+    },
+  },
+  {
+    id: 'ancientRelic', name: 'Ancient Relic', owner: 'kolorado', type: 'power', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_starpiece',
+    text: (up) => `At the start of each turn, gain {${v(up, 1, 2)}} [Star Power].`,
+    play: (x, up) => x.power('relic', v(up, 1, 2)),
+  },
+  {
+    id: 'treasureMap', name: 'Treasure Map', owner: 'kolorado', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_letter', exhaust: true,
+    text: (up) => `Gain {${v(up, 15, 25)}} coins. Exhaust.`,
+    play: (x, up) => x.c.gainCoins(v(up, 15, 25), x.src),
+  },
+  {
+    id: 'caveIn', name: 'Cave-In', owner: 'kolorado', type: 'attack', rarity: 'uncommon', cost: 2, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'i_stonecap',
+    text: (up) => `Deal {${v(up, 12, 16)}} damage. Apply [Dizzy] 1.`,
+    play: (x, up) => {
+      x.attack(v(up, 12, 16), { kind: 'ranged', contact: false });
+      x.apply('dizzy', 1);
+    },
+  },
+  {
+    id: 'archaeology', name: 'Archaeology', owner: 'kolorado', type: 'power', rarity: 'rare', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'b_227',
+    text: () => `Whenever an enemy is defeated, gain 6 coins and draw 1 card.`,
+    play: (x) => x.power('archaeology', 6),
+  },
+  {
+    id: 'legendaryFind', name: 'Legendary Find', owner: 'kolorado', type: 'skill', rarity: 'rare', cost: 1, target: 'none', anim: 'cast', icon: 'i_gift', exhaust: true,
+    text: (up) => `Add ${up ? 3 : 2} random rare cards from your pools to your hand. They cost 0 this turn. Exhaust.`,
+    play: (x, up) => {
+      const pool = x.c.rewardPool('rare');
+      for (let i = 0; i < (up ? 3 : 2) && pool.length; i++) x.c.addCardToHand(x.c.rng.pick(pool), false, true);
+    },
+  },
+
+  // ---------------- Kammy Koopa ----------------
+  {
+    id: 'magicBlast', name: 'Magic Blast', owner: 'kammy', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'p_kammy',
+    text: (up) => `Kammy deals {${v(up, 7, 10)}} damage.`,
+    play: (x, up) => void x.attack(v(up, 7, 10), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'magicBlock', name: 'Magic Block', owner: 'kammy', type: 'skill', rarity: 'starter', cost: 1, target: 'ally', anim: 'cast', icon: 'block',
+    text: (up) => `An ally gains {${v(up, 7, 10)}} [Block].`,
+    play: (x, up) => x.target && x.block(v(up, 7, 10), x.target),
+  },
+  {
+    id: 'broomDive', name: 'Broom Dive', owner: 'kammy', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'dash', icon: 'b_121',
+    text: (up) => `Kammy deals {${v(up, 5, 7)}} damage twice.`,
+    play: (x, up) => void x.attack(v(up, 5, 7), { kind: 'ranged', hits: 2 }),
+  },
+  {
+    id: 'hex', name: 'Hex', owner: 'kammy', type: 'skill', rarity: 'common', cost: 1, target: 'enemy', anim: 'cast', icon: 'st_poison',
+    text: (up) => `Apply [Soft] {${v(up, 1, 2)}} and [Shrunk] {${v(up, 1, 2)}}.`,
+    play: (x, up) => {
+      x.apply('soft', v(up, 1, 2));
+      x.apply('shrunk', v(up, 1, 2));
+    },
+  },
+  {
+    id: 'hocusPocus', name: 'Hocus Pocus', owner: 'kammy', type: 'skill', rarity: 'common', cost: 0, target: 'none', anim: 'cast', icon: 'b_120',
+    text: (up) => `Draw {${v(up, 1, 2)}} card${up ? 's' : ''}. ${up ? 'They cost' : 'It costs'} 0 this turn.`,
+    play: (x, up) => {
+      const before = x.c.hand.length;
+      x.draw(v(up, 1, 2));
+      for (const inst of x.c.hand.slice(before)) inst.free = true;
+    },
+  },
+  {
+    id: 'empower', name: 'Empower', owner: 'kammy', type: 'skill', rarity: 'uncommon', cost: 1, target: 'ally', anim: 'cast', icon: 'arrowUp', exhaust: true,
+    text: (up) => `An ally gains {${v(up, 2, 3)}} [Strength]. Exhaust.`,
+    play: (x, up) => x.target && x.apply('strength', v(up, 2, 3), x.target),
+  },
+  {
+    id: 'magicShower', name: 'Magic Shower', owner: 'kammy', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'zap', icon: 'star',
+    text: (up) => `Deal {${v(up, 3, 4)}} damage to a random enemy 5 times.`,
+    play: (x, up) => void x.attackRandom(v(up, 3, 4), 5, { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'shieldSpell', name: 'Shield Spell', owner: 'kammy', type: 'power', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'b_243',
+    text: (up) => `At the end of each turn, every ally gains {${v(up, 2, 3)}} [Block].`,
+    play: (x, up) => x.power('shieldSpell', v(up, 2, 3)),
+  },
+  {
+    id: 'giantGrowth', name: 'Giant Growth', owner: 'kammy', type: 'skill', rarity: 'rare', cost: 2, costUp: 1, target: 'none', anim: 'cast', icon: 'b_229', exhaust: true,
+    text: (up) => `Mario gains {${v(up, 3, 4)}} [Strength] and {15} [Block]. Exhaust.`,
+    play: (x, up) => {
+      x.apply('strength', v(up, 3, 4), x.mario);
+      x.block(15);
+    },
+  },
+  {
+    id: 'witchCurse', name: "Witch's Curse", owner: 'kammy', type: 'skill', rarity: 'rare', cost: 2, target: 'none', anim: 'cast', icon: 'st_skull', exhaust: true,
+    text: (up) => `Apply [Dizzy] 1 and [Soft] {${v(up, 2, 3)}} to ALL enemies. Exhaust.`,
+    play: (x, up) => {
+      x.applyAllEnemies('dizzy', 1);
+      x.applyAllEnemies('soft', v(up, 2, 3));
+    },
+  },
+
   // ---------------- partner combos ----------------
   {
     id: 'scoutReport', name: 'Scout Report', owner: 'goombario', combo: 'parakarry', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_letter',
