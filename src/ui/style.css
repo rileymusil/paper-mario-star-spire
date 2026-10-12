@@ -1630,6 +1630,26 @@ b {
 .map-node.next:hover {
   transform: translate(-50%, -50%) scale(1.15);
 }
+.map-node.next.armed {
+  transform: translate(-50%, -50%) scale(1.25);
+  animation: none;
+  box-shadow: 0 0 0 5px #fff, 0 0 0 9px var(--gold), 0 3px 0 var(--ink);
+  z-index: 3;
+}
+.map-go {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 4;
+  white-space: nowrap;
+  pointer-events: none;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  animation: previewin 0.15s ease-out;
+}
 @keyframes nodepulse {
   from { box-shadow: 0 0 0 3px var(--gold), 0 3px 0 var(--ink); }
   to { box-shadow: 0 0 0 7px var(--gold), 0 0 22px var(--gold); }

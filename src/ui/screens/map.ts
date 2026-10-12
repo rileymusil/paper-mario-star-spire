@@ -35,6 +35,19 @@ export function renderMap(app: App, run: RunState, readOnly = false): HTMLElemen
       ? { x: width / 2, y: 80 }
       : { x: padX + n.col * colW + n.jx * colW * 0.35, y: height - 60 - (n.floor - 1) * rowH + n.jy * rowH * 0.25 };
   const next = new Set(readOnly ? [] : reachable(map, run.pos));
+  // Touch taps arm a node first and travel on a second tap, so a stray tap can't commit a path.
+  let armed: { id: string; el: HTMLElement; label: HTMLElement } | null = null;
+  let pointer = 'mouse';
+  const disarm = () => {
+    armed?.el.classList.remove('armed');
+    armed?.label.remove();
+    armed = null;
+  };
+  const travel = (id: string) => {
+    sfx.select();
+    enterNode(run, id);
+    app.commit();
+  };
   const visited = new Set(run.visited);
 
   // edges
@@ -78,16 +91,22 @@ export function renderMap(app: App, run: RunState, readOnly = false): HTMLElemen
     const el = h('div', { class: cls, style: { left: `${p.x}px`, top: `${p.y}px` } }, content);
     tip(el, () => `<b>${isBoss ? ENEMIES[bossId].name : info.label}</b><br>${isBoss ? ENEMIES[bossId].desc : info.desc}`);
     if (next.has(n.id)) {
-      el.addEventListener('click', () => {
+      el.addEventListener('pointerdown', (e) => (pointer = e.pointerType));
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (pointer === 'mouse' || armed?.id === n.id) return travel(n.id);
+        disarm();
         sfx.select();
-        enterNode(run, n.id);
-        app.commit();
+        const label = h('div.map-go', { style: { left: `${p.x}px`, top: `${p.y - (isBoss ? 100 : 46)}px` } }, `${isBoss ? ENEMIES[bossId].name : info.label}: tap again to go`);
+        el.classList.add('armed');
+        el.parentElement?.appendChild(label);
+        armed = { id: n.id, el, label };
       });
     }
     return el;
   });
 
-  const canvas = h('div.map-canvas', { style: { width: `${width}px`, height: `${height}px` } }, svg, ...nodes);
+  const canvas = h('div.map-canvas', { style: { width: `${width}px`, height: `${height}px` }, onclick: disarm }, svg, ...nodes);
   const scroller = h('div.map-scroll', null, canvas);
   // Scroll so the current position (or the start) is in view.
   requestAnimationFrame(() => {
@@ -105,7 +124,7 @@ export function renderMap(app: App, run: RunState, readOnly = false): HTMLElemen
     ...(['battle', 'elite', 'event', 'shop', 'rest', 'treasure', 'partner'] as NodeType[]).map((t) =>
       h('div.legend-row', null, h('span.legend-ic', null, NODE_INFO[t].char ? portrait(NODE_INFO[t].char!, 24) : iconFit(NODE_INFO[t].icon!, 22)), NODE_INFO[t].label),
     ),
-    h('div.legend-hint', null, next.size ? 'Pick a glowing node.' : ''),
+    h('div.legend-hint', null, next.size ? 'Pick a glowing node. On touch screens, tap twice to travel.' : ''),
   );
   return h('div.map-screen', { class: `act${run.act}` }, app.hud(), h('div.map-body', null, legend, scroller));
 }
