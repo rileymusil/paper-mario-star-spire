@@ -5,6 +5,7 @@ import { Rng } from '../src/engine/rng';
 import { generateMap, reachable } from '../src/engine/map';
 import { battleReward, cardPool, newRun, recruit, restHeal, rollBadge, withRng } from '../src/engine/run';
 import { HERO_LIST } from '../src/data/heroes';
+import { starPiecesFor } from '../src/data/town';
 import { DEFAULT_META, unlockForAct } from '../src/engine/save';
 import { MAX_LEVEL, starLevel } from '../src/data/levels';
 import type { RunState } from '../src/engine/types';
@@ -550,6 +551,22 @@ describe('full runs', () => {
         expect(r.result, `${hero.id} seed ${s}`).not.toBe('stuck');
       }
     }
+  });
+});
+
+describe('toad town', () => {
+  it('perks change new runs, and finished runs pay Star Pieces', () => {
+    const base = newRun({ seed: 'T', starter: 'kooper' });
+    const perked = newRun({ seed: 'T', starter: 'kooper', perks: { hp: 2, coins: 1, item: 1, star: 1, badge: 1, remove: 1 } });
+    expect(perked.mario.maxHp).toBe(base.mario.maxHp + 10);
+    expect(perked.coins).toBe(base.coins + 25);
+    expect(perked.items).toContain('supershroom');
+    expect(perked.starMax).toBe(base.starMax + 1);
+    expect(perked.badges).toHaveLength(1);
+    expect(perked.removeCost).toBe(base.removeCost - 25);
+    const won = { ...base, act: 3, stats: { ...base.stats, elites: 2, bosses: 3 } };
+    expect(starPiecesFor(won, true)).toBe(3 * 2 + 2 + 3 + 4);
+    expect(starPiecesFor({ ...base, act: 1 }, false)).toBe(1);
   });
 });
 

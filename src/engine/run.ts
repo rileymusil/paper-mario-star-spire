@@ -27,7 +27,7 @@ export function withRng<T>(run: RunState, stream: string, fn: (r: Rng) => T): T 
 
 // ---------- creation ----------
 
-export function newRun(opts: { seed?: string; starter: PartnerId; level?: number; hero?: HeroId }): RunState {
+export function newRun(opts: { seed?: string; starter: PartnerId; level?: number; hero?: HeroId; perks?: Record<string, number> }): RunState {
   const hero = HEROES[opts.hero ?? 'mario'];
   const seed = opts.seed ?? Math.random().toString(36).slice(2, 10).toUpperCase();
   const rng: Record<string, number> = {};
@@ -65,10 +65,21 @@ export function newRun(opts: { seed?: string; starter: PartnerId; level?: number
   for (const id of hero.deck) addCard(run, id);
   if (run.level >= 3) run.mario.hp = run.mario.maxHp = hero.hp - 5;
   if (run.level >= 7) addCard(run, 'haunted');
+  // Toad Town perks
+  const perk = (id: string) => opts.perks?.[id] ?? 0;
+  run.mario.hp = run.mario.maxHp += 5 * perk('hp');
+  run.coins += 25 * perk('coins');
+  if (perk('item')) addItem(run, 'supershroom');
+  run.starMax += perk('star');
+  run.removeCost -= 25 * perk('remove');
   run.bosses = withRng(run, 'map', (r) => ACTS.map((a) => r.pick(a.bosses)));
   // Bowser's run ends against the hero himself.
   if (hero.id === 'bowser') run.bosses[ACTS.length - 1] = 'mario_boss';
   recruit(run, hero.starter ?? opts.starter);
+  if (perk('badge')) {
+    const b = withRng(run, 'rewards', (r) => rollBadge(run, r, [['common', 1]]));
+    if (b) addBadge(run, b);
+  }
   startAct(run, 1);
   return run;
 }

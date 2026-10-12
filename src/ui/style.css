@@ -1511,6 +1511,108 @@ b {
   align-items: center;
   gap: 18px;
 }
+.town-screen {
+  position: absolute;
+  inset: 0;
+}
+.town-bank {
+  position: absolute;
+  top: 84px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 20px;
+  text-shadow: var(--stroke);
+}
+.town-bank b {
+  font-size: 28px;
+  color: var(--gold);
+}
+.town-hint {
+  position: absolute;
+  top: 124px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+  text-shadow: var(--stroke);
+}
+.perk-list {
+  position: absolute;
+  top: 158px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(920px, 94%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.port .perk-list {
+  grid-template-columns: 1fr;
+}
+.perk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.perk.maxed {
+  opacity: 0.75;
+}
+.perk-icon {
+  width: 48px;
+  display: grid;
+  place-items: center;
+}
+.perk-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.perk-who {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.perk-desc {
+  font-size: 13px;
+}
+.perk-next {
+  font-size: 11px;
+  color: #23943f;
+}
+.perk-pips {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+}
+.perk-pips span {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+  background: #cbbfa8;
+}
+.perk-pips span.on {
+  background: var(--gold);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+.perk-owned {
+  font-weight: 900;
+  color: #23943f;
+}
+.star-earned {
+  color: #b8860b;
+  font-weight: 900;
+}
 .level-picker {
   display: flex;
   align-items: center;

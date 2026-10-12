@@ -6,7 +6,7 @@ import { heroOf } from '../../data/heroes';
 import { ENEMIES, PARTNERS } from '../../data/registry';
 import { h } from '../dom';
 import { button } from '../components';
-import { portrait } from '../sprite';
+import { iconFit, portrait } from '../sprite';
 import { sfx } from '../sfx';
 
 export function renderActIntro(app: App, run: RunState): HTMLElement {
@@ -34,6 +34,7 @@ function stats(run: RunState): HTMLElement {
   return h(
     'div.stats',
     null,
+    run.starPieces ? h('div.star-earned', null, iconFit('i_starpiece', 20), ` +${run.starPieces} Star Pieces for Toad Town`) : null,
     h('div', null, `Reached Act ${run.act}`),
     h('div', null, `Battles won: ${s.battles} · Elites: ${s.elites} · Bosses: ${s.bosses}`),
     h('div', null, `Damage dealt: ${s.damageDealt} · Nice! hits: ${s.nice}`),

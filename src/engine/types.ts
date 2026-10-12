@@ -143,6 +143,8 @@ export interface RunState {
   /** event ids already seen this run */
   seenEvents: string[];
   removeCost: number;
+  /** Star Pieces this run has paid out (set once it ends) */
+  starPieces?: number;
   /** playable hero (saves from before heroes are Mario) */
   hero?: HeroId;
   /** Star Level (difficulty) */

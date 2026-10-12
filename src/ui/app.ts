@@ -13,6 +13,8 @@ import { icon, iconFit } from './sprite';
 import { onResize, stage } from './stage';
 import { setSfx, sfx } from './sfx';
 import { renderTitle, renderStarter } from './screens/title';
+import { renderTown } from './screens/town';
+import { starPiecesFor } from '../data/town';
 import { renderMap } from './screens/map';
 import { BattleView } from './screens/battle';
 import { renderReward, renderBossReward } from './screens/reward';
@@ -27,7 +29,7 @@ export class App {
   run: RunState | null = loadRun();
   battle: BattleView | null = null;
   private screenEl: HTMLElement;
-  private mode: 'title' | 'starter' | 'run' = 'title';
+  private mode: 'title' | 'starter' | 'run' | 'town' = 'title';
 
   constructor() {
     this.screenEl = h('div.screen');
@@ -52,7 +54,7 @@ export class App {
   }
 
   startRun(hero: HeroId, starter: (typeof this.meta.starters)[number], level: number) {
-    this.run = newRun({ hero, starter, level });
+    this.run = newRun({ hero, starter, level, perks: this.meta.perks });
     this.meta.runs++;
     saveMeta(this.meta);
     this.mode = 'run';
@@ -77,6 +79,21 @@ export class App {
     this.render();
   }
 
+  showTown() {
+    this.mode = 'town';
+    this.render();
+  }
+
+  /** Once a run ends, add its Star Pieces to the Toad Town bank (exactly once). */
+  private payStarPieces() {
+    const run = this.run;
+    if (!run || run.starPieces !== undefined || (run.screen.kind !== 'victory' && run.screen.kind !== 'gameover')) return;
+    run.starPieces = starPiecesFor(run, run.screen.kind === 'victory');
+    this.meta.starPieces += run.starPieces;
+    saveMeta(this.meta);
+    saveRun(run);
+  }
+
   /** Called when an act's boss reward is resolved. */
   actCleared(act: number): string[] {
     const news = unlockForAct(this.meta, act, this.run ? starLevel(this.run) : 0);
@@ -92,8 +109,10 @@ export class App {
     for (const o of stage().el.querySelectorAll('.overlay')) o.remove();
     clear(this.screenEl);
     showHero(this.run && this.mode === 'run' ? heroOf(this.run) : null);
+    this.payStarPieces();
     let view: HTMLElement;
-    if (this.mode === 'starter') view = renderStarter(this);
+    if (this.mode === 'town') view = renderTown(this);
+    else if (this.mode === 'starter') view = renderStarter(this);
     else if (this.mode === 'title' || !this.run) view = renderTitle(this);
     else view = this.renderRun(this.run);
     this.screenEl.appendChild(view);

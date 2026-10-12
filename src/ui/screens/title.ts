@@ -32,6 +32,7 @@ export function renderTitle(app: App): HTMLElement {
           sfx.select();
           app.showStarter();
         }, run ? 'big' : 'big primary'),
+        button(h('span', null, 'Toad Town', m.starPieces ? h('small', null, ` ${m.starPieces} Star Pieces`) : null), () => app.showTown(), 'big'),
         button('How to Play', () => howToPlay(), 'big'),
         button('Settings', () => app.openSettings(), 'big'),
       ),

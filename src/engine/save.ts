@@ -13,6 +13,10 @@ export interface Meta {
   starters: PartnerId[];
   /** unlocked heroes */
   heroes: HeroId[];
+  /** Toad Town currency, earned at the end of each run */
+  starPieces: number;
+  /** Toad Town perk levels */
+  perks: Record<string, number>;
   /** highest Star Level unlocked (0 until the first win) */
   maxLevel: number;
   /** from saves made before Star Levels */
@@ -29,6 +33,8 @@ const META_KEY = 'pmspire.meta';
 export const DEFAULT_META: Meta = {
   starters: ['goombario', 'kooper', 'bombette'],
   heroes: ['mario'],
+  starPieces: 0,
+  perks: {},
   maxLevel: 0,
   runs: 0,
   wins: 0,
@@ -59,6 +65,7 @@ export function loadMeta(): Meta {
   const meta = { ...DEFAULT_META, ...m, settings: { ...DEFAULT_META.settings, ...m?.settings } };
   meta.starters = [...meta.starters];
   meta.heroes = [...meta.heroes];
+  meta.perks = { ...meta.perks };
   if (m?.maxLevel === undefined && m?.hardUnlocked) meta.maxLevel = 1;
   return meta;
 }
