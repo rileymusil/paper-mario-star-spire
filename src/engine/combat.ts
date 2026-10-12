@@ -55,6 +55,10 @@ export class Ctx {
   get mario(): Unit {
     return this.c.mario;
   }
+  /** Is this partner fielded and conscious (for Combo cards)? */
+  withPartner(id: PartnerId): boolean {
+    return this.c.comboActive(id);
+  }
   get partners(): Unit[] {
     return this.c.livingPartners();
   }
@@ -978,6 +982,12 @@ export class Combat {
   }
 
   /** Partner unit for a partner id, if on the field. */
+  /** A combo partner is fielded and not KO'd. */
+  comboActive(id: PartnerId): boolean {
+    const u = this.partner(id);
+    return !!u && !u.dead;
+  }
+
   /** Strength of a partner's passive (by rank) while it is fielded and conscious, else 0. */
   passive(id: PartnerId): number {
     const u = this.partner(id);

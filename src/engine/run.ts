@@ -126,7 +126,7 @@ export function canRemove(_run: RunState, inst: CardInst): boolean {
 /** Card ids that can appear in rewards for the current team. */
 export function cardPool(run: RunState, rarity: string): string[] {
   const owners = new Set<string>(['mario', ...run.partners.filter((p) => p.field).map((p) => p.id)]);
-  return CARD_LIST.filter((c) => owners.has(c.owner) && c.rarity === rarity).map((c) => c.id);
+  return CARD_LIST.filter((c) => owners.has(c.owner) && (!c.combo || owners.has(c.combo)) && c.rarity === rarity).map((c) => c.id);
 }
 
 /** A reward card id, with '+' suffix when pre-upgraded. */

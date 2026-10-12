@@ -38,6 +38,7 @@ export const KEYWORDS: Record<string, string> = {
   Sleep: 'Skips actions until hurt.',
   Static: 'Foes that touch it take damage.',
   Hidden: 'Attacks against it miss.',
+  Combo: "Gets its bonus while the named partner is fielded and not KO'd.",
 };
 
 export const ITEM_LIST: ItemDef[] = [

@@ -3,7 +3,7 @@ import sprites from '../src/generated/sprites.json';
 import { Combat } from '../src/engine/combat';
 import { Rng } from '../src/engine/rng';
 import { generateMap, reachable } from '../src/engine/map';
-import { newRun } from '../src/engine/run';
+import { cardPool, newRun } from '../src/engine/run';
 import type { RunState } from '../src/engine/types';
 import { ACTS, FLOORS } from '../src/data/acts';
 import { CARD_LIST } from '../src/data/cards';
@@ -250,6 +250,24 @@ describe('combat rules', () => {
     const n = p.hand.length;
     p.play(give(p, 'priorityMail'), undefined, false);
     expect(p.hand.slice(n).every((x) => x.free)).toBe(true);
+  });
+
+  it('combo cards get their bonus only with the combo partner up, and only drop with both partners', () => {
+    const add = (id: string) => (run: RunState) => void run.partners.push({ id: id as any, hp: 20, maxHp: 20, rank: 0, field: true });
+    const solo = fight(['goomba']);
+    solo.play(give(solo, 'tidalShell'), undefined, false);
+    expect(solo.mario.block).toBe(0); // Sushie isn't fielded, so the card can't even be played
+    const s = fight(['goomba'], add('sushie'));
+    s.play(give(s, 'tidalShell'), undefined, false);
+    expect(s.mario.block).toBe(5 + 6); // Kooper is the starter, so the combo fires
+    const s2 = fight(['goomba'], add('sushie'));
+    s2.loseHp(s2.partner('kooper')!, 999);
+    s2.play(give(s2, 'tidalShell'), undefined, false);
+    expect(s2.mario.block).toBe(5);
+    const run = newRun({ seed: 'C', starter: 'kooper' });
+    expect(cardPool(run, 'uncommon')).not.toContain('shellBomb');
+    run.partners.push({ id: 'bombette', hp: 18, maxHp: 18, rank: 0, field: true });
+    expect(cardPool(run, 'uncommon')).toContain('shellBomb');
   });
 
   it('partner passives apply while the partner is up, scaled by rank', () => {

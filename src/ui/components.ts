@@ -101,6 +101,7 @@ export function cardEl(inst: Pick<CardInst, 'id' | 'up'> & Partial<CardInst>, o:
     h('div.card-type', null, typeLabel),
     h('div.card-text', null, h('div', { html: markup(text) })),
     owner !== 'mario' && owner !== 'none' ? h('div.card-owner', null, icon(PARTNERS[owner].icon, 1)) : null,
+    d.combo ? h('div.card-combo', { class: o.combat?.comboActive(d.combo) ? 'on' : '' }, '+', icon(PARTNERS[d.combo].icon, 1)) : null,
     o.price !== undefined ? h('div.price', null, icon('coin', 1), String(o.price)) : null,
   );
   tip(el, () => keywordBox(keywordsIn(d.text(up))) ?? `<b>${esc(d.name)}</b>`);

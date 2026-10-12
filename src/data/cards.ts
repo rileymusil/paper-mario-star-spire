@@ -825,6 +825,70 @@ export const CARD_LIST: CardDef[] = [
     },
   },
 
+  // ---------------- partner combos ----------------
+  {
+    id: 'scoutReport', name: 'Scout Report', owner: 'goombario', combo: 'parakarry', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_letter',
+    text: (up) => `Apply [Soft] {${v(up, 1, 2)}} to ALL enemies. [Combo] Parakarry: draw 2 cards.`,
+    play: (x, up) => {
+      x.applyAllEnemies('soft', v(up, 1, 2));
+      if (x.withPartner('parakarry')) x.draw(2);
+    },
+  },
+  {
+    id: 'shellBomb', name: 'Shell Bomb', owner: 'kooper', combo: 'bombette', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ground', anim: 'shell', icon: 'b_247',
+    text: (up) => `Kooper deals {${v(up, 7, 10)}} damage to every ground foe. [Combo] Bombette: [Pierce], and it hits [Flying] foes too.`,
+    play: (x, up) => {
+      const combo = x.withPartner('bombette');
+      x.attackAll(v(up, 7, 10), combo ? { kind: 'ranged', pierce: true, contact: false, fire: true } : { kind: 'ground' });
+    },
+  },
+  {
+    id: 'liveWire', name: 'Live Wire', owner: 'bombette', combo: 'watt', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'bomb', icon: 'st_static',
+    text: (up) => `Deal {${v(up, 7, 10)}} damage to ALL enemies. [Pierce]. [Combo] Watt: apply [Dizzy] 1 to a random enemy.`,
+    play: (x, up) => {
+      x.attackAll(v(up, 7, 10), { kind: 'ranged', pierce: true, contact: false, fire: true });
+      const live = x.enemies;
+      if (x.withPartner('watt') && live.length) x.apply('dizzy', 1, x.c.rng.pick(live));
+    },
+  },
+  {
+    id: 'airSuperiority', name: 'Air Strike', owner: 'parakarry', combo: 'lakilester', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'dash', icon: 'cloud',
+    text: (up) => `Deal {${v(up, 6, 8)}} damage to ALL enemies. [Combo] Lakilester: hit them twice.`,
+    play: (x, up) => void x.attackAll(v(up, 6, 8), { kind: 'ranged', contact: false, hits: x.withPartner('lakilester') ? 2 : 1 }),
+  },
+  {
+    id: 'ghostStory', name: 'Ghost Story', owner: 'bow', combo: 'goombario', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'b_162',
+    text: (up) => `Apply [Shrunk] {${v(up, 2, 3)}} to ALL enemies. [Combo] Goombario: also apply [Soft] 1 to ALL enemies.`,
+    play: (x, up) => {
+      x.applyAllEnemies('shrunk', v(up, 2, 3));
+      if (x.withPartner('goombario')) x.applyAllEnemies('soft', 1);
+    },
+  },
+  {
+    id: 'phantomShock', name: 'Phantom Shock', owner: 'watt', combo: 'bow', type: 'attack', rarity: 'uncommon', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'b_299',
+    text: (up) => `Watt deals {${v(up, 7, 10)}} damage. [Pierce]. [Combo] Bow: Mario becomes [Hidden] until your next turn.`,
+    play: (x, up) => {
+      x.attack(v(up, 7, 10), { kind: 'ranged', pierce: true });
+      if (x.withPartner('bow')) x.apply('hidden', 1, x.mario);
+    },
+  },
+  {
+    id: 'tidalShell', name: 'Tidal Shell', owner: 'sushie', combo: 'kooper', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'shell',
+    text: (up) => `Every ally gains {${v(up, 5, 7)}} [Block]. [Combo] Kooper: Mario gains {${v(up, 6, 8)}} more.`,
+    play: (x, up) => {
+      x.blockAll(v(up, 5, 7));
+      if (x.withPartner('kooper')) x.block(v(up, 6, 8));
+    },
+  },
+  {
+    id: 'rainstorm', name: 'Rainstorm', owner: 'lakilester', combo: 'sushie', type: 'attack', rarity: 'uncommon', cost: 1, target: 'allEnemies', atk: 'ranged', anim: 'throw', icon: 'b_240',
+    text: (up) => `Deal {${v(up, 3, 4)}} damage to a random enemy 4 times. [Combo] Sushie: heal every ally 3.`,
+    play: (x, up) => {
+      x.attackRandom(v(up, 3, 4), 4, { kind: 'ranged', contact: false });
+      if (x.withPartner('sushie')) x.healAll(3);
+    },
+  },
+
   // ---------------- status / curses ----------------
   {
     id: 'dazed', name: 'Dazed', owner: 'none', type: 'status', rarity: 'special', cost: 0, target: 'none', icon: 'st_dizzy', unplayable: true, ethereal: true,

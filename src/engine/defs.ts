@@ -5,6 +5,8 @@ export interface CardDef {
   id: string;
   name: string;
   owner: Owner;
+  /** combo partner: the card gets a bonus while this partner is fielded and conscious */
+  combo?: PartnerId;
   type: CardType;
   rarity: Rarity;
   cost: number;

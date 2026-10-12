@@ -521,6 +521,26 @@ b {
 .card.up .card-text .num {
   color: #138a35;
 }
+.card-combo {
+  position: absolute;
+  right: 6px;
+  top: 52px;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 0 2px;
+  opacity: 0.55;
+}
+.card-combo.on {
+  opacity: 1;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
 .card-text .num.buffed,
 .card-text .num.nerfed {
   color: #fff;
