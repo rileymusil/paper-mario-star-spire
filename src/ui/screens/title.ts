@@ -32,6 +32,11 @@ export function renderTitle(app: App): HTMLElement {
           sfx.select();
           app.showStarter();
         }, run ? 'big' : 'big primary'),
+        button(h('span', null, 'Partner Quest', h('small', null, ' Mario needs rescuing!')), () => {
+          if (run && !confirm('Start a new run? Your current run will be lost.')) return;
+          sfx.select();
+          app.showStarter(true);
+        }, 'big'),
         button(h('span', null, 'Toad Town', m.starPieces ? h('small', null, ` ${m.starPieces} Star Pieces`) : null), () => app.showTown(), 'big'),
         button('How to Play', () => howToPlay(), 'big'),
         button('Settings', () => app.openSettings(), 'big'),
@@ -42,8 +47,11 @@ export function renderTitle(app: App): HTMLElement {
   );
 }
 
-export function renderStarter(app: App): HTMLElement {
-  const unlockedHeroes = HERO_LIST.filter((hd) => app.meta.heroes.includes(hd.id));
+export function renderStarter(app: App, quest = false): HTMLElement {
+  // Partner Quest lists only its leads (all available); the main game lists its unlocked heroes.
+  const roster = HERO_LIST.filter((hd) => !!hd.quest === quest);
+  const isUnlocked = (hd: HeroDef) => quest || app.meta.heroes.includes(hd.id);
+  const unlockedHeroes = roster.filter(isUnlocked);
   // With only Mario unlocked there's nothing to choose: go straight to partners.
   let hero: HeroDef | null = unlockedHeroes.length > 1 ? null : HEROES.mario;
   let level = app.meta.maxLevel;
@@ -55,12 +63,12 @@ export function renderStarter(app: App): HTMLElement {
 
   const heroStep = (): Node[] => [
     h('div.title-bg.dim', { style: { backgroundImage: 'url(bg/title_art.png)' } }),
-    h('div.screen-title', null, 'Choose your hero'),
+    h('div.screen-title', null, quest ? 'Partner Quest: who will rescue Mario?' : 'Choose your hero'),
     h(
       'div.starter-grid',
       null,
-      ...HERO_LIST.map((hd) => {
-        const unlocked = app.meta.heroes.includes(hd.id);
+      ...roster.map((hd) => {
+        const unlocked = isUnlocked(hd);
         const el = h(
           'div.starter.hero',
           { class: unlocked ? '' : 'locked' },

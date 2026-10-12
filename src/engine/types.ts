@@ -1,5 +1,7 @@
 export type PartnerId = 'goombario' | 'kooper' | 'bombette' | 'parakarry' | 'bow' | 'watt' | 'sushie' | 'lakilester' | 'kolorado' | 'kammy';
-export type HeroId = 'mario' | 'luigi' | 'peach' | 'bowser';
+export type HeroId = 'mario' | 'luigi' | 'peach' | 'bowser' | QuestHeroId;
+/** Partner Quest leads */
+export type QuestHeroId = 'link' | 'fox' | 'geno' | 'banjo' | 'ashley' | 'wario' | 'waluigi';
 /** 'mario' means the run's hero, whoever that is */
 export type Owner = 'mario' | PartnerId | 'none';
 export type Side = 'ally' | 'enemy';
@@ -145,6 +147,8 @@ export interface RunState {
   removeCost: number;
   /** Star Pieces this run has paid out (set once it ends) */
   starPieces?: number;
+  /** 'quest' for Partner Quest runs (Mario's friends rescue him) */
+  mode?: 'quest';
   /** playable hero (saves from before heroes are Mario) */
   hero?: HeroId;
   /** Star Level (difficulty) */

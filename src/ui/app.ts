@@ -30,6 +30,8 @@ export class App {
   battle: BattleView | null = null;
   private screenEl: HTMLElement;
   private mode: 'title' | 'starter' | 'run' | 'town' = 'title';
+  /** the starter screen is picking a Partner Quest lead */
+  private questPick = false;
 
   constructor() {
     this.screenEl = h('div.screen');
@@ -48,8 +50,9 @@ export class App {
     this.render();
   }
 
-  showStarter() {
+  showStarter(quest = false) {
     this.mode = 'starter';
+    this.questPick = quest;
     this.render();
   }
 
@@ -112,7 +115,7 @@ export class App {
     this.payStarPieces();
     let view: HTMLElement;
     if (this.mode === 'town') view = renderTown(this);
-    else if (this.mode === 'starter') view = renderStarter(this);
+    else if (this.mode === 'starter') view = renderStarter(this, this.questPick);
     else if (this.mode === 'title' || !this.run) view = renderTitle(this);
     else view = this.renderRun(this.run);
     this.screenEl.appendChild(view);

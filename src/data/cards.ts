@@ -410,6 +410,491 @@ export const CARD_LIST: CardDef[] = [
     },
   },
 
+  // ---------------- Partner Quest: Link ----------------
+  {
+    id: 'swordSlash', name: 'Sword Slash', owner: 'mario', set: 'link', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'p_link',
+    text: (up) => `Link deals {${v(up, 6, 9)}} damage. Can't reach [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 6, 9), { kind: 'ground' }),
+  },
+  {
+    id: 'hylianShield', name: 'Shield Up', owner: 'mario', set: 'link', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_238',
+    text: (up) => `Link gains {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'heroBow', name: "Hero's Bow", owner: 'mario', set: 'link', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'hammer3',
+    text: (up) => `Deal {${v(up, 5, 8)}} damage. Reaches [Flying] foes. Draw 1 card.`,
+    play: (x, up) => {
+      x.attack(v(up, 5, 8), { kind: 'ranged', contact: false });
+      x.draw(1);
+    },
+  },
+  {
+    id: 'spinAttack', name: 'Spin Attack', owner: 'mario', set: 'link', type: 'attack', rarity: 'common', cost: 2, target: 'allEnemies', atk: 'ground', anim: 'dash', icon: 'b_239',
+    text: (up) => `Link deals {${v(up, 7, 10)}} damage to every ground foe.`,
+    play: (x, up) => void x.attackAll(v(up, 7, 10), { kind: 'ground' }),
+  },
+  {
+    id: 'linkBomb', name: 'Bomb', owner: 'mario', set: 'link', type: 'attack', rarity: 'common', cost: 1, target: 'allEnemies', atk: 'ranged', anim: 'bomb', icon: 'b_253',
+    text: (up) => `Deal {${v(up, 4, 6)}} damage to ALL enemies. [Pierce]. [Flip]s [Shelled] foes.`,
+    play: (x, up) => void x.attackAll(v(up, 4, 6), { kind: 'ranged', pierce: true, flip: true, contact: false, fire: true }),
+  },
+  {
+    id: 'hookshot', name: 'Hookshot', owner: 'mario', set: 'link', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'i_key',
+    text: (up) => `Deal {${v(up, 5, 8)}} damage. Pull a [Flying] foe down to the ground.`,
+    play: (x, up) => {
+      x.attack(v(up, 5, 8), { kind: 'ranged' });
+      const t = x.target;
+      if (t && !t.dead && t.traits.includes('flying') && !t.traits.includes('boss')) x.c.ground(t);
+    },
+  },
+  {
+    id: 'fairyBottle', name: 'Fairy in a Bottle', owner: 'mario', set: 'link', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_tonic', exhaust: true,
+    text: (up) => `Heal Link {${v(up, 12, 16)}}. Exhaust.`,
+    play: (x, up) => x.heal(v(up, 12, 16)),
+  },
+  {
+    id: 'masterSword', name: 'Master Sword', owner: 'mario', set: 'link', type: 'power', rarity: 'uncommon', cost: 1, target: 'none', anim: 'buff', icon: 'hammer_b6',
+    text: (up) => `Link gains {${v(up, 2, 3)}} [Strength].`,
+    play: (x, up) => x.apply('strength', v(up, 2, 3), x.mario),
+  },
+  {
+    id: 'fireArrow', name: 'Fire Arrow', owner: 'mario', set: 'link', type: 'attack', rarity: 'uncommon', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'fireflower',
+    text: (up) => `Deal {${v(up, 7, 10)}} damage. Apply [Burn] 2.`,
+    play: (x, up) => {
+      x.attack(v(up, 7, 10), { kind: 'ranged', contact: false, fire: true });
+      x.apply('burn', 2);
+    },
+  },
+  {
+    id: 'greatSpin', name: 'Great Spin', owner: 'mario', set: 'link', type: 'attack', rarity: 'rare', cost: 2, target: 'allEnemies', atk: 'ground', anim: 'dash', icon: 'b_244',
+    text: (up) => `Link deals {${v(up, 7, 9)}} damage to every ground foe twice and [Flip]s [Shelled] ones.`,
+    play: (x, up) => void x.attackAll(v(up, 7, 9), { kind: 'ground', hits: 2, flip: true }),
+  },
+  {
+    id: 'triforce', name: 'Triforce of Courage', owner: 'mario', set: 'link', type: 'power', rarity: 'rare', cost: 2, costUp: 1, target: 'none', anim: 'cast', icon: 'star',
+    text: () => `At the end of each turn, Link gains 5 [Block].`,
+    play: (x) => x.power('shellFortress', 5),
+  },
+
+  // ---------------- Partner Quest: Fox ----------------
+  {
+    id: 'foxBlaster', name: 'Blaster', owner: 'mario', set: 'fox', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'p_fox',
+    text: (up) => `Fox deals {${v(up, 6, 9)}} damage. Reaches [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 6, 9), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'reflector', name: 'Reflector', owner: 'mario', set: 'fox', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_243',
+    text: (up) => `Fox gains {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'barrelRoll', name: 'Barrel Roll', owner: 'mario', set: 'fox', type: 'skill', rarity: 'starter', cost: 1, costUp: 0, target: 'none', anim: 'buff', icon: 'b_121',
+    text: () => `Fox gains 4 [Block]. Draw 1 card.`,
+    play: (x) => {
+      x.block(4);
+      x.draw(1);
+    },
+  },
+  {
+    id: 'chargeShot', name: 'Charge Shot', owner: 'mario', set: 'fox', type: 'attack', rarity: 'common', cost: 2, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'st_charge',
+    text: (up) => `Deal {${v(up, 13, 17)}} damage.`,
+    play: (x, up) => void x.attack(v(up, 13, 17), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'foxIllusion', name: 'Fox Illusion', owner: 'mario', set: 'fox', type: 'attack', rarity: 'common', cost: 0, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'b_120',
+    text: (up) => `Fox deals {${v(up, 3, 5)}} damage. Draw 1 card.`,
+    play: (x, up) => {
+      x.attack(v(up, 3, 5), { kind: 'ground' });
+      x.draw(1);
+    },
+  },
+  {
+    id: 'rapidFire', name: 'Rapid Fire', owner: 'mario', set: 'fox', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'st_static',
+    text: (up) => `Fox deals {${v(up, 2, 3)}} damage 4 times.`,
+    play: (x, up) => void x.attack(v(up, 2, 3), { kind: 'ranged', hits: 4, contact: false }),
+  },
+  {
+    id: 'smartBomb', name: 'Smart Bomb', owner: 'mario', set: 'fox', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'bomb', icon: 'burst100',
+    text: (up) => `Deal {${v(up, 8, 11)}} damage to ALL enemies. [Pierce].`,
+    play: (x, up) => void x.attackAll(v(up, 8, 11), { kind: 'ranged', pierce: true, contact: false, fire: true }),
+  },
+  {
+    id: 'arwingStrike', name: 'Arwing Strike', owner: 'mario', set: 'fox', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'dash', icon: 'b_234',
+    text: (up) => `Deal {${v(up, 5, 7)}} damage to ALL enemies twice.`,
+    play: (x, up) => void x.attackAll(v(up, 5, 7), { kind: 'ranged', hits: 2, contact: false }),
+  },
+  {
+    id: 'doABarrelRoll', name: 'Do a Barrel Roll!', owner: 'mario', set: 'fox', type: 'skill', rarity: 'uncommon', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'b_162', exhaust: true,
+    text: () => `Fox becomes [Hidden] until your next turn. Exhaust.`,
+    play: (x) => x.apply('hidden', 1, x.mario),
+  },
+  {
+    id: 'starFoxTeam', name: 'Star Fox Team', owner: 'mario', set: 'fox', type: 'power', rarity: 'rare', cost: 2, costUp: 1, target: 'none', anim: 'cast', icon: 'starIcon',
+    text: () => `At the start of each turn, Falco, Peppy and Slippy deal 3 damage to ALL enemies.`,
+    play: (x) => x.power('poltergeist', 3),
+  },
+  {
+    id: 'landmaster', name: 'Landmaster', owner: 'mario', set: 'fox', type: 'attack', rarity: 'rare', cost: 3, costUp: 2, target: 'enemy', atk: 'ranged', anim: 'bomb', icon: 'i_pow', exhaust: true,
+    text: () => `Deal {28} damage. [Pierce]. Exhaust.`,
+    play: (x) => void x.attack(28, { kind: 'ranged', pierce: true, contact: false, fire: true }),
+  },
+
+  // ---------------- Partner Quest: Geno ----------------
+  {
+    id: 'fingerShot', name: 'Finger Shot', owner: 'mario', set: 'geno', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'p_geno',
+    text: (up) => `Geno deals {${v(up, 2, 3)}} damage 3 times.`,
+    play: (x, up) => void x.attack(v(up, 2, 3), { kind: 'ranged', hits: 3, contact: false }),
+  },
+  {
+    id: 'starGuard', name: 'Star Guard', owner: 'mario', set: 'geno', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'star',
+    text: (up) => `Geno gains {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'genoBoost', name: 'Geno Boost', owner: 'mario', set: 'geno', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'cast', icon: 'arrowUp',
+    text: (up) => `Geno gains [Charge] {${v(up, 6, 9)}}.`,
+    play: (x, up) => x.apply('charge', v(up, 6, 9), x.mario),
+  },
+  {
+    id: 'genoBeam', name: 'Geno Beam', owner: 'mario', set: 'geno', type: 'attack', rarity: 'common', cost: 2, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'i_thunderbolt',
+    text: (up) => `Deal {${v(up, 9, 13)}} damage. Geno's [Charge] counts double.`,
+    play: (x, up) => void x.attack(v(up, 9, 13) + (x.mario.st.charge ?? 0), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'genoWhirl', name: 'Geno Whirl', owner: 'mario', set: 'geno', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'b_239',
+    text: (up) => `Deal {${v(up, 6, 9)}} damage. If this defeats the target, gain 2 [Star Power].`,
+    play: (x, up) => {
+      x.attack(v(up, 6, 9), { kind: 'ranged', contact: false });
+      if (x.target?.dead) x.gainStar(2);
+    },
+  },
+  {
+    id: 'starBlast', name: 'Star Blast', owner: 'mario', set: 'geno', type: 'attack', rarity: 'common', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'starIcon',
+    text: (up) => `Deal {${v(up, 6, 8)}} damage to ALL enemies.`,
+    play: (x, up) => void x.attackAll(v(up, 6, 8), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'genoFlash', name: 'Geno Flash', owner: 'mario', set: 'geno', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'burst100',
+    text: (up) => `Deal {${v(up, 8, 11)}} damage to ALL enemies. Apply [Dizzy] 1 to a random one.`,
+    play: (x, up) => {
+      x.attackAll(v(up, 8, 11), { kind: 'ranged', contact: false });
+      const live = x.enemies;
+      if (live.length) x.apply('dizzy', 1, x.c.rng.pick(live));
+    },
+  },
+  {
+    id: 'starWish', name: 'Star Wish', owner: 'mario', set: 'geno', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'heart', exhaust: true,
+    text: (up) => `Heal every ally {${v(up, 6, 9)}}. Exhaust.`,
+    play: (x, up) => x.healAll(v(up, 6, 9)),
+  },
+  {
+    id: 'genoCannon', name: 'Geno Cannon', owner: 'mario', set: 'geno', type: 'attack', rarity: 'uncommon', cost: 1, target: 'enemy', atk: 'ranged', anim: 'bomb', icon: 'i_pow',
+    text: (up) => `Deal {${v(up, 8, 11)}} damage. [Pierce].`,
+    play: (x, up) => void x.attack(v(up, 8, 11), { kind: 'ranged', pierce: true, contact: false }),
+  },
+  {
+    id: 'genoBlast', name: 'Geno Blast', owner: 'mario', set: 'geno', type: 'attack', rarity: 'rare', cost: 3, costUp: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'i_shootingstar', exhaust: true,
+    text: () => `Deal {10} damage to ALL enemies twice. Exhaust.`,
+    play: (x) => void x.attackAll(10, { kind: 'ranged', hits: 2, contact: false }),
+  },
+  {
+    id: 'starRoad', name: 'Star Road', owner: 'mario', set: 'geno', type: 'power', rarity: 'rare', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'spirit1',
+    text: () => `Geno gains 2 more [Charge] at the start of each turn.`,
+    play: (x) => x.power('starRoad', 2),
+  },
+
+  // ---------------- Partner Quest: Banjo & Kazooie ----------------
+  {
+    id: 'beakBarge', name: 'Beak Barge', owner: 'mario', set: 'banjo', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'p_banjo',
+    text: (up) => `Banjo & Kazooie deal {${v(up, 7, 10)}} damage. Can't reach [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 7, 10), { kind: 'ground' }),
+  },
+  {
+    id: 'bearBlock', name: 'Bear Block', owner: 'mario', set: 'banjo', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_238',
+    text: (up) => `Banjo & Kazooie gain {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'eggFiring', name: 'Egg Firing', owner: 'mario', set: 'banjo', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'i_egg',
+    text: (up) => `Deal {${v(up, 3, 4)}} damage twice. Reaches [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 3, 4), { kind: 'ranged', hits: 2, contact: false }),
+  },
+  {
+    id: 'ratATatRap', name: 'Rat-a-tat Rap', owner: 'mario', set: 'banjo', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'smack', icon: 'b_114',
+    text: (up) => `Kazooie deals {${v(up, 2, 3)}} damage 4 times.`,
+    play: (x, up) => void x.attack(v(up, 2, 3), { kind: 'ranged', hits: 4 }),
+  },
+  {
+    id: 'beakBuster', name: 'Beak Buster', owner: 'mario', set: 'banjo', type: 'attack', rarity: 'common', cost: 2, target: 'enemy', atk: 'jump', anim: 'jump', icon: 'boots_b2',
+    text: (up) => `Deal {${v(up, 13, 17)}} damage. [Jump]`,
+    play: (x, up) => void x.attack(v(up, 13, 17), { kind: 'jump' }),
+  },
+  {
+    id: 'talonTrot', name: 'Talon Trot', owner: 'mario', set: 'banjo', type: 'skill', rarity: 'common', cost: 1, costUp: 0, target: 'none', anim: 'buff', icon: 'b_115',
+    text: () => `Draw 2 cards.`,
+    play: (x) => x.draw(2),
+  },
+  {
+    id: 'grenadeEggs', name: 'Grenade Eggs', owner: 'mario', set: 'banjo', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'bomb', icon: 'i_egg',
+    text: (up) => `Deal {${v(up, 7, 10)}} damage to ALL enemies. Apply [Burn] 1 to each.`,
+    play: (x, up) => {
+      x.attackAll(v(up, 7, 10), { kind: 'ranged', contact: false, fire: true });
+      x.applyAllEnemies('burn', 1);
+    },
+  },
+  {
+    id: 'jinjo', name: 'Jinjo Rescue', owner: 'mario', set: 'banjo', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_gift', exhaust: true,
+    text: (up) => `Gain 2 [Star Power]. Heal Banjo & Kazooie {${v(up, 5, 8)}}. Exhaust.`,
+    play: (x, up) => {
+      x.gainStar(2);
+      x.heal(v(up, 5, 8));
+    },
+  },
+  {
+    id: 'beakBomb', name: 'Beak Bomb', owner: 'mario', set: 'banjo', type: 'attack', rarity: 'uncommon', cost: 2, target: 'enemy', atk: 'ranged', anim: 'dash', icon: 'b_121',
+    text: (up) => `Deal {${v(up, 16, 21)}} damage. Reaches [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 16, 21), { kind: 'ranged' }),
+  },
+  {
+    id: 'wonderwingCard', name: 'Wonderwing', owner: 'mario', set: 'banjo', type: 'skill', rarity: 'rare', cost: 1, target: 'none', anim: 'cast', icon: 'b_252', exhaust: true,
+    text: (up) => `Banjo & Kazooie become [Hidden] and gain {${v(up, 10, 15)}} [Block]. Exhaust.`,
+    play: (x, up) => {
+      x.apply('hidden', 1, x.mario);
+      x.block(v(up, 10, 15));
+    },
+  },
+  {
+    id: 'mumboMagic', name: "Mumbo's Magic", owner: 'mario', set: 'banjo', type: 'power', rarity: 'rare', cost: 2, costUp: 1, target: 'none', anim: 'cast', icon: 'st_skull',
+    text: () => `Banjo & Kazooie gain 1 [Strength] at the end of each turn.`,
+    play: (x) => x.apply('growth', 1, x.mario),
+  },
+
+  // ---------------- Partner Quest: Ashley ----------------
+  {
+    id: 'wandBolt', name: 'Wand Bolt', owner: 'mario', set: 'ashley', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'p_ashley',
+    text: (up) => `Ashley deals {${v(up, 6, 9)}} damage.`,
+    play: (x, up) => void x.attack(v(up, 6, 9), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'magicBarrier', name: 'Magic Barrier', owner: 'mario', set: 'ashley', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_243',
+    text: (up) => `Ashley gains {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'spellbook', name: 'Spellbook', owner: 'mario', set: 'ashley', type: 'skill', rarity: 'starter', cost: 1, target: 'enemy', anim: 'cast', icon: 'i_book',
+    text: (up) => `Apply [Soft] {${v(up, 1, 2)}} and [Shrunk] 1. Draw 1 card.`,
+    play: (x, up) => {
+      x.apply('soft', v(up, 1, 2));
+      x.apply('shrunk', 1);
+      x.draw(1);
+    },
+  },
+  {
+    id: 'curseCloud', name: 'Curse Cloud', owner: 'mario', set: 'ashley', type: 'skill', rarity: 'common', cost: 1, target: 'none', anim: 'cast', icon: 'st_poison',
+    text: (up) => `Apply [Soft] {${v(up, 1, 2)}} to ALL enemies.`,
+    play: (x, up) => x.applyAllEnemies('soft', v(up, 1, 2)),
+  },
+  {
+    id: 'redBlast', name: 'Red Blast', owner: 'mario', set: 'ashley', type: 'attack', rarity: 'common', cost: 2, target: 'enemy', atk: 'ranged', anim: 'cast', icon: 'fireflower',
+    text: (up) => `Deal {${v(up, 13, 17)}} damage.`,
+    play: (x, up) => void x.attack(v(up, 13, 17), { kind: 'ranged', contact: false, fire: true }),
+  },
+  {
+    id: 'darkChant', name: 'Dark Chant', owner: 'mario', set: 'ashley', type: 'skill', rarity: 'common', cost: 0, target: 'none', anim: 'cast', icon: 'st_skull',
+    text: (up) => `Draw {${v(up, 2, 3)}} cards. Ashley loses 2 HP.`,
+    play: (x, up) => {
+      x.draw(v(up, 2, 3));
+      x.c.loseHp(x.mario, 2);
+    },
+  },
+  {
+    id: 'demonForm', name: 'Demon Form', owner: 'mario', set: 'ashley', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'arrowUp', exhaust: true,
+    text: (up) => `Ashley transforms now (Red Rage). If she already has, she gains {${v(up, 2, 3)}} [Strength] instead. Exhaust.`,
+    play: (x, up) => {
+      if (!x.c.ashleyRage()) x.apply('strength', v(up, 2, 3), x.mario);
+    },
+  },
+  {
+    id: 'darkStorm', name: 'Dark Storm', owner: 'mario', set: 'ashley', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'cloud',
+    text: (up) => `Deal {${v(up, 4, 5)}} damage to ALL enemies 3 times.`,
+    play: (x, up) => void x.attackAll(v(up, 4, 5), { kind: 'ranged', hits: 3, contact: false }),
+  },
+  {
+    id: 'lifeDrain', name: 'Life Drain', owner: 'mario', set: 'ashley', type: 'attack', rarity: 'uncommon', cost: 1, target: 'enemy', atk: 'ranged', anim: 'zap', icon: 'heart',
+    text: (up) => `Deal {${v(up, 7, 10)}} damage. Ashley heals for the HP it takes.`,
+    play: (x, up) => {
+      const took = x.attack(v(up, 7, 10), { kind: 'ranged', contact: false });
+      x.heal(took);
+    },
+  },
+  {
+    id: 'redsPact', name: "Red's Pact", owner: 'mario', set: 'ashley', type: 'power', rarity: 'rare', cost: 1, target: 'none', anim: 'cast', icon: 'b_247',
+    text: (up) => `Ashley gains {${v(up, 3, 4)}} [Strength]. She loses 6 HP.`,
+    play: (x, up) => {
+      x.apply('strength', v(up, 3, 4), x.mario);
+      x.c.loseHp(x.mario, 6);
+    },
+  },
+  {
+    id: 'apocalypse', name: 'Apocalypse', owner: 'mario', set: 'ashley', type: 'attack', rarity: 'rare', cost: 3, costUp: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'i_thunderrage', exhaust: true,
+    text: () => `Deal {20} damage to ALL enemies. Exhaust.`,
+    play: (x) => void x.attackAll(20, { kind: 'ranged', contact: false, fire: true }),
+  },
+
+  // ---------------- Partner Quest: Wario ----------------
+  {
+    id: 'shoulderBash', name: 'Shoulder Bash', owner: 'mario', set: 'wario', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'p_wario',
+    text: (up) => `Wario deals {${v(up, 7, 10)}} damage. Can't reach [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 7, 10), { kind: 'ground' }),
+  },
+  {
+    id: 'toughGuy', name: 'Tough Guy', owner: 'mario', set: 'wario', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_238',
+    text: (up) => `Wario gains {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'coinGrab', name: 'Coin Grab', owner: 'mario', set: 'wario', type: 'skill', rarity: 'starter', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'coin',
+    text: () => `Gain 6 coins. Draw 1 card.`,
+    play: (x) => {
+      x.c.gainCoins(6, x.mario);
+      x.draw(1);
+    },
+  },
+  {
+    id: 'groundPound', name: 'Ground Pound', owner: 'mario', set: 'wario', type: 'attack', rarity: 'common', cost: 2, target: 'enemy', atk: 'jump', anim: 'jump', icon: 'boots_b2',
+    text: (up) => `Deal {${v(up, 12, 16)}} damage. [Jump]`,
+    play: (x, up) => void x.attack(v(up, 12, 16), { kind: 'jump' }),
+  },
+  {
+    id: 'garlicSnack', name: 'Garlic Snack', owner: 'mario', set: 'wario', type: 'skill', rarity: 'common', cost: 1, target: 'none', anim: 'cast', icon: 'i_lemon', exhaust: true,
+    text: (up) => `Heal Wario {${v(up, 8, 12)}}. He gains 1 [Strength]. Exhaust.`,
+    play: (x, up) => {
+      x.heal(v(up, 8, 12));
+      x.apply('strength', 1, x.mario);
+    },
+  },
+  {
+    id: 'warioWaft', name: 'Wario Waft', owner: 'mario', set: 'wario', type: 'attack', rarity: 'common', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'cloud',
+    text: (up) => `Deal {${v(up, 6, 8)}} damage to ALL enemies. Apply [Shrunk] 1 to each.`,
+    play: (x, up) => {
+      x.attackAll(v(up, 6, 8), { kind: 'ranged', contact: false });
+      x.applyAllEnemies('shrunk', 1);
+    },
+  },
+  {
+    id: 'bribe', name: 'Bribe', owner: 'mario', set: 'wario', type: 'skill', rarity: 'uncommon', cost: 1, target: 'enemy', anim: 'cast', icon: 'b_227', exhaust: true,
+    text: (up) => `Pay {${v(up, 40, 25)}} coins: a non-boss enemy takes the money and leaves. Exhaust.`,
+    play: (x, up) => {
+      const t = x.target!;
+      const price = v(up, 40, 25);
+      if (t.traits.includes('boss') || x.c.run.coins < price) {
+        x.c.emit({ t: 'text', target: t.uid, text: t.traits.includes('boss') ? 'Not for sale!' : 'Not enough coins!' });
+        return;
+      }
+      x.c.gainCoins(-price);
+      x.c.flee(t);
+      x.c.checkEnd();
+    },
+  },
+  {
+    id: 'treasureSack', name: 'Treasure Sack', owner: 'mario', set: 'wario', type: 'skill', rarity: 'uncommon', cost: 1, target: 'none', anim: 'cast', icon: 'i_chest', exhaust: true,
+    text: (up) => `Gain {${v(up, 20, 30)}} coins. Exhaust.`,
+    play: (x, up) => x.c.gainCoins(v(up, 20, 30), x.mario),
+  },
+  {
+    id: 'corkscrew', name: 'Corkscrew Conk', owner: 'mario', set: 'wario', type: 'attack', rarity: 'uncommon', cost: 2, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'b_239',
+    text: (up) => `Wario deals {${v(up, 7, 9)}} damage twice and [Flip]s [Shelled] foes.`,
+    play: (x, up) => void x.attack(v(up, 7, 9), { kind: 'ground', hits: 2, flip: true }),
+  },
+  {
+    id: 'warioWare', name: 'WarioWare, Inc.', owner: 'mario', set: 'wario', type: 'power', rarity: 'rare', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'b_227',
+    text: () => `Whenever an enemy is defeated, gain 6 coins and draw 1 card.`,
+    play: (x) => x.power('archaeology', 6),
+  },
+  {
+    id: 'megaWaft', name: 'Mega Waft', owner: 'mario', set: 'wario', type: 'attack', rarity: 'rare', cost: 3, costUp: 2, target: 'allEnemies', atk: 'ranged', anim: 'cast', icon: 'b_247', exhaust: true,
+    text: () => `Deal {18} damage to ALL enemies. Apply [Shrunk] 2 to each. Exhaust.`,
+    play: (x) => {
+      x.attackAll(18, { kind: 'ranged', contact: false });
+      x.applyAllEnemies('shrunk', 2);
+    },
+  },
+
+  // ---------------- Partner Quest: Waluigi ----------------
+  {
+    id: 'whirluigi', name: 'Whirluigi', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'ranged', anim: 'dash', icon: 'p_waluigi',
+    text: (up) => `Waluigi deals {${v(up, 5, 8)}} damage. Reaches [Flying] foes.`,
+    play: (x, up) => void x.attack(v(up, 5, 8), { kind: 'ranged' }),
+  },
+  {
+    id: 'wahDodge', name: 'Wah Dodge', owner: 'mario', set: 'waluigi', type: 'skill', rarity: 'starter', cost: 1, target: 'none', anim: 'buff', icon: 'b_237',
+    text: (up) => `Waluigi gains {${v(up, 5, 8)}} [Block].`,
+    play: (x, up) => x.block(v(up, 5, 8)),
+  },
+  {
+    id: 'cheapShot', name: 'Cheap Shot', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'starter', cost: 0, target: 'enemy', atk: 'ground', anim: 'dash', icon: 'b_120',
+    text: (up) => `Waluigi deals {${v(up, 3, 5)}} damage.`,
+    play: (x, up) => void x.attack(v(up, 3, 5), { kind: 'ground' }),
+  },
+  {
+    id: 'thornyVine', name: 'Thorny Vine', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'b_245',
+    text: (up) => `Deal {${v(up, 5, 7)}} damage. Apply [Shrunk] {${v(up, 1, 2)}}.`,
+    play: (x, up) => {
+      x.attack(v(up, 5, 7), { kind: 'ranged', contact: false });
+      x.apply('shrunk', v(up, 1, 2));
+    },
+  },
+  {
+    id: 'pickpocket', name: 'Pickpocket', owner: 'mario', set: 'waluigi', type: 'skill', rarity: 'common', cost: 1, target: 'enemy', anim: 'cast', icon: 'b_160',
+    text: (up) => `Take all [Strength] from an enemy: Waluigi gains it${up ? ', +1' : ''}.`,
+    play: (x, up) => {
+      const t = x.target!;
+      const str = Math.max(0, t.st.strength ?? 0);
+      if (str) {
+        delete t.st.strength;
+        x.c.emit({ t: 'status', target: t.uid, id: 'strength', n: 0 });
+      }
+      if (str + (up ? 1 : 0)) x.apply('strength', str + (up ? 1 : 0), x.mario);
+    },
+  },
+  {
+    id: 'tennisSmash', name: 'Tennis Smash', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'common', cost: 1, target: 'enemy', atk: 'ranged', anim: 'throw', icon: 'i_coconut',
+    text: (up) => `Deal {${v(up, 8, 11)}} damage.`,
+    play: (x, up) => void x.attack(v(up, 8, 11), { kind: 'ranged', contact: false }),
+  },
+  {
+    id: 'wahStorm', name: 'Wah Storm', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'dash', icon: 'b_239',
+    text: (up) => `Deal {${v(up, 5, 7)}} damage to ALL enemies twice.`,
+    play: (x, up) => void x.attackAll(v(up, 5, 7), { kind: 'ranged', hits: 2 }),
+  },
+  {
+    id: 'sabotage', name: 'Sabotage', owner: 'mario', set: 'waluigi', type: 'skill', rarity: 'uncommon', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'x',
+    text: () => `Remove all [Block] from ALL enemies and apply [Soft] 1 to each.`,
+    play: (x) => {
+      for (const e of x.enemies) e.block = 0;
+      x.applyAllEnemies('soft', 1);
+    },
+  },
+  {
+    id: 'bobOmbBowl', name: 'Bob-omb Bowling', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'uncommon', cost: 2, target: 'allEnemies', atk: 'ranged', anim: 'bomb', icon: 'p_bombette',
+    text: (up) => `Deal {${v(up, 9, 12)}} damage to ALL enemies. [Pierce].`,
+    play: (x, up) => void x.attackAll(v(up, 9, 12), { kind: 'ranged', pierce: true, contact: false, fire: true }),
+  },
+  {
+    id: 'waluigiTime', name: 'Waluigi Time', owner: 'mario', set: 'waluigi', type: 'power', rarity: 'rare', cost: 1, costUp: 0, target: 'none', anim: 'cast', icon: 'b_299',
+    text: () => `At the start of each turn, apply [Soft] 1 and [Shrunk] 1 to a random enemy.`,
+    play: (x) => {
+      x.power('tattleLog', 1);
+      x.power('haunt', 1);
+    },
+  },
+  {
+    id: 'purpleSwarm', name: 'Purple Swarm', owner: 'mario', set: 'waluigi', type: 'attack', rarity: 'rare', cost: 3, costUp: 2, target: 'enemy', atk: 'ranged', anim: 'smack', icon: 'b_114',
+    text: () => `Waluigi deals {3} damage 8 times.`,
+    play: (x) => void x.attack(3, { kind: 'ranged', hits: 8 }),
+  },
+
   // ---------------- Goombario ----------------
   {
     id: 'headbonk', name: 'Headbonk', owner: 'goombario', type: 'attack', rarity: 'starter', cost: 1, target: 'enemy', atk: 'jump', anim: 'jump', icon: 'p_goombario',

@@ -54,6 +54,7 @@ export function newRun(opts: { seed?: string; starter: PartnerId; level?: number
     seenEvents: [],
     removeCost: 75,
     hero: hero.id,
+    mode: hero.quest ? 'quest' : undefined,
     level: opts.level ?? 0,
     nextUid: 1,
     stats: { battles: 0, elites: 0, bosses: 0, damageDealt: 0, nice: 0, coinsEarned: 0 },

@@ -438,6 +438,7 @@ export class Combat {
     }
     if (this.powers.rainDance) for (const a of this.livingAllies()) this.gainBlock(a, this.powers.rainDance);
     if (this.hero.id === 'peach') this.gainBlock(this.mario, 2);
+    if (this.hero.id === 'geno') this.applyStatus(this.mario, 'charge', 2 + (this.powers.starRoad ?? 0));
     if (this.powers.queenlyAura) for (const p of this.livingPartners()) this.gainBlock(p, this.powers.queenlyAura);
     if (this.powers.overclock) for (const a of this.livingAllies()) this.applyStatus(a, 'pumped', this.powers.overclock);
     if (this.powers.haunt) {
@@ -704,6 +705,7 @@ export class Combat {
           if (opts.kind === 'hammer' && this.has('powerSmash')) d += 2;
           if (this.has('lastStand') && src.hp <= src.maxHp * 0.3) d += 3;
           if (this.hero.id === 'luigi') d += opts.kind === 'jump' ? 2 : opts.kind === 'hammer' ? -2 : 0;
+          if (this.hero.id === 'wario') d += Math.min(4, Math.floor(this.run.coins / 50));
         }
         if (this.has('pUpDDown')) d += 1;
       }
@@ -773,7 +775,13 @@ export class Combat {
       return 0;
     }
     if (guarded) d = Math.max(0, d - GUARD_REDUCTION);
-    const blocked = Math.min(target.block, d);
+    if (target.uid === 'mario' && src?.side === 'enemy' && d > 0 && this.hero.id === 'link' && target.mem.shieldTurn !== this.turn) {
+      target.mem.shieldTurn = this.turn;
+      d = Math.max(0, d - 3);
+      this.emit({ t: 'text', target: target.uid, text: 'Shield!', color: '#9fe3ff' });
+    }
+    // Waluigi cheats: his attacks slip past half of the target's Block.
+    const blocked = Math.min(src?.uid === 'mario' && this.hero.id === 'waluigi' ? Math.floor(target.block / 2) : target.block, d);
     target.block -= blocked;
     const loss = Math.min(target.hp, d - blocked);
     target.hp -= d - blocked;
@@ -790,6 +798,11 @@ export class Combat {
       this.applyStatus(target, 'strength', 1);
       this.emit({ t: 'text', target: target.uid, text: 'Nervous!', color: '#7dff8a' });
     }
+    if (src?.side === 'enemy' && !src.dead && target.uid === 'mario' && blocked > 0 && this.hero.id === 'fox') {
+      this.emit({ t: 'text', target: src.uid, text: 'Reflected!', color: '#9fe3ff' });
+      this.loseHp(src, 2);
+    }
+    if (target.uid === 'mario' && target.hp > 0 && target.hp <= target.maxHp / 2) this.ashleyRage();
     if (src?.side === 'enemy' && !src.dead && target.uid === 'mario' && opts.contact !== false && this.hero.id === 'bowser') {
       this.emit({ t: 'text', target: src.uid, text: 'Spiked!', color: '#ff7070' });
       this.loseHp(src, 2);
@@ -812,6 +825,7 @@ export class Combat {
     u.hp -= n;
     this.emit({ t: 'hit', target: u.uid, dmg: n, blocked: 0 });
     this.checkPhase(u);
+    if (u.uid === 'mario' && u.hp > 0 && u.hp <= u.maxHp / 2) this.ashleyRage();
     if (u.hp <= 0) this.kill(u, {});
   }
 
@@ -846,6 +860,12 @@ export class Combat {
         const n = this.powers.kaboom;
         for (const e of this.livingEnemies()) this.attack(undefined, e, n, { pierce: true }, false);
       }
+      return;
+    }
+    if (u.uid === 'mario' && this.hero.id === 'banjo' && !u.mem.wonderwing) {
+      u.mem.wonderwing = true;
+      u.hp = 1;
+      this.emit({ t: 'text', target: u.uid, text: 'Wonderwing!', color: '#ffd84a' });
       return;
     }
     if (u.uid === 'mario') {
@@ -1088,6 +1108,18 @@ export class Combat {
   }
 
   /** Partner unit for a partner id, if on the field. */
+  /** Ashley's Red Rage: the first time it triggers each battle she transforms (+3 Strength). Returns whether it fired now. */
+  ashleyRage(): boolean {
+    const u = this.mario;
+    if (this.hero.id !== 'ashley' || u.mem.rage || u.dead) return false;
+    u.mem.rage = true;
+    u.pose = 'angry';
+    this.applyStatus(u, 'strength', 3);
+    this.emit({ t: 'pose', target: u.uid, pose: 'angry' });
+    this.emit({ t: 'text', target: u.uid, text: 'Red Rage!', color: '#ff5a2a' });
+    return true;
+  }
+
   /** A combo partner is fielded and not KO'd. */
   comboActive(id: PartnerId): boolean {
     const u = this.partner(id);

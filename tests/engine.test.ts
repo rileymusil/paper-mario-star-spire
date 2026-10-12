@@ -614,6 +614,49 @@ describe('heroes', () => {
     expect(b.hp).toBe(hp - 2);
   });
 
+  it('Partner Quest leads: passives work', () => {
+    const fight1 = (hero: string, enemies = ['goomba']) => {
+      const c = new Combat(newRun({ seed: 'Q', starter: 'kooper', hero: hero as any }), enemies, 'normal', new Rng(1));
+      c.begin();
+      return c;
+    };
+    expect(newRun({ seed: 'Q', starter: 'kooper', hero: 'link' }).mode).toBe('quest');
+    // Link's shield softens the first hit each turn only
+    const l = fight1('link');
+    const hp = l.mario.hp;
+    l.hit(l.enemies[0], l.mario, 7, {}, true);
+    l.hit(l.enemies[0], l.mario, 7, {}, true);
+    expect(l.mario.hp).toBe(hp - 4 - 7);
+    // Fox reflects while he has Block
+    const f = fight1('fox');
+    f.gainBlock(f.mario, 5);
+    const ehp = f.enemies[0].hp;
+    f.hit(f.enemies[0], f.mario, 3, {}, true);
+    expect(f.enemies[0].hp).toBe(ehp - 2);
+    // Geno starts each turn with Charge
+    expect(fight1('geno').mario.st.charge).toBe(2);
+    // Banjo & Kazooie survive one KO
+    const b = fight1('banjo');
+    b.loseHp(b.mario, 999);
+    expect(b.mario.dead).toBe(false);
+    expect(b.mario.hp).toBe(1);
+    // Ashley transforms at half HP
+    const a = fight1('ashley');
+    a.loseHp(a.mario, Math.ceil(a.mario.maxHp / 2));
+    expect(a.mario.st.strength).toBe(3);
+    // Wario: +1 damage per 50 coins
+    const w = fight1('wario');
+    w.run.coins = 120;
+    expect(w.calc(w.mario, w.enemies[0], 5)).toBe(7);
+    // Waluigi's attacks slip past half the target's Block
+    const wl = fight1('waluigi');
+    const g = wl.enemies[0];
+    g.hp = g.maxHp = 40;
+    g.block = 6;
+    wl.hit(wl.mario, g, 8, {}, true);
+    expect(g.hp).toBe(40 - 5);
+  });
+
   it("Mario fights back as Bowser's final boss", () => {
     const run = newRun({ seed: 'F', starter: 'kooper', hero: 'bowser' });
     run.mario.hp = run.mario.maxHp = 999;

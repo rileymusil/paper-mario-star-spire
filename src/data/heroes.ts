@@ -21,6 +21,8 @@ export interface HeroDef {
   passive: { name: string; desc: string };
   unlock: string;
   she?: boolean;
+  /** a Partner Quest lead (picked from the Partner Quest button, not the main hero select) */
+  quest?: boolean;
 }
 
 export const HERO_LIST: HeroDef[] = [
@@ -56,6 +58,63 @@ export const HERO_LIST: HeroDef[] = [
     passive: { name: 'Spiked Shell', desc: 'Enemies that touch Bowser take 2 damage. Fights with Kammy Koopa and just 1 partner at a time.' },
     unlock: 'Defeat Bowser to unlock.',
   },
+  // ---------------- Partner Quest leads ----------------
+  {
+    id: 'link', name: 'Link', sprite: 'link', icon: 'p_link', color: '#3f9b3a', hp: 40, quest: true,
+    deck: ['swordSlash', 'swordSlash', 'swordSlash', 'swordSlash', 'hylianShield', 'hylianShield', 'hylianShield', 'hylianShield', 'heroBow'],
+    partnerSlots: 2, sets: ['link'],
+    blurb: 'Sword, shield and a trusty bow. Spin Attacks and bombs clear crowds.',
+    passive: { name: 'Hylian Shield', desc: 'The first enemy hit on Link each turn deals 3 less damage.' },
+    unlock: '',
+  },
+  {
+    id: 'fox', name: 'Fox', sprite: 'fox', icon: 'p_fox', color: '#d9902b', hp: 40, quest: true,
+    deck: ['foxBlaster', 'foxBlaster', 'foxBlaster', 'foxBlaster', 'reflector', 'reflector', 'reflector', 'reflector', 'barrelRoll'],
+    partnerSlots: 2, sets: ['fox'],
+    blurb: 'Blaster pilot. Ranged shots, Smart Bombs and Arwing strikes.',
+    passive: { name: 'Reflector', desc: 'When an enemy hits Fox while he has Block, it takes 2 damage.' },
+    unlock: '',
+  },
+  {
+    id: 'geno', name: 'Geno', sprite: 'geno', icon: 'p_geno', color: '#2f55c8', hp: 38, quest: true,
+    deck: ['fingerShot', 'fingerShot', 'fingerShot', 'fingerShot', 'starGuard', 'starGuard', 'starGuard', 'starGuard', 'genoBoost'],
+    partnerSlots: 2, sets: ['geno'],
+    blurb: 'Star warrior. Charges up and unloads Geno Beams.',
+    passive: { name: 'Star Charge', desc: 'Geno gains 2 Charge at the start of each turn (his next attack deals that much more).' },
+    unlock: '',
+  },
+  {
+    id: 'banjo', name: 'Banjo & Kazooie', sprite: 'banjo', icon: 'p_banjo', color: '#8a5a2b', hp: 40, size: 0.8, quest: true,
+    deck: ['beakBarge', 'beakBarge', 'beakBarge', 'beakBarge', 'bearBlock', 'bearBlock', 'bearBlock', 'bearBlock', 'eggFiring'],
+    partnerSlots: 2, sets: ['banjo'],
+    blurb: 'Bear and bird duo. Beak Barges, egg volleys and Beak Busters.',
+    passive: { name: 'Wonderwing', desc: 'Once per battle, a hit that would KO Banjo & Kazooie leaves them at 1 HP instead.' },
+    unlock: '',
+  },
+  {
+    id: 'ashley', name: 'Ashley', sprite: 'ashley', icon: 'p_ashley', color: '#c23a2a', hp: 36, quest: true, she: true,
+    deck: ['wandBolt', 'wandBolt', 'wandBolt', 'wandBolt', 'magicBarrier', 'magicBarrier', 'magicBarrier', 'magicBarrier', 'spellbook'],
+    partnerSlots: 2, sets: ['ashley'],
+    blurb: 'Young witch with a wand. Curses, hexes and a very bad temper.',
+    passive: { name: 'Red Rage', desc: 'The first time Ashley drops to half HP in a battle she transforms: +3 Strength for the rest of the fight.' },
+    unlock: '',
+  },
+  {
+    id: 'wario', name: 'Wario', sprite: 'wario', icon: 'p_wario', color: '#e0b81c', hp: 44, quest: true,
+    deck: ['shoulderBash', 'shoulderBash', 'shoulderBash', 'shoulderBash', 'toughGuy', 'toughGuy', 'toughGuy', 'toughGuy', 'coinGrab'],
+    partnerSlots: 2, sets: ['wario'],
+    blurb: 'Greedy brawler. Coins make him hit harder.',
+    passive: { name: 'Greed', desc: "Wario's attacks deal +1 damage for every 50 coins you carry (up to +4)." },
+    unlock: '',
+  },
+  {
+    id: 'waluigi', name: 'Waluigi', sprite: 'waluigi', icon: 'p_waluigi', color: '#6a3fb0', hp: 36, quest: true,
+    deck: ['whirluigi', 'whirluigi', 'whirluigi', 'whirluigi', 'wahDodge', 'wahDodge', 'wahDodge', 'wahDodge', 'cheapShot'],
+    partnerSlots: 2, sets: ['waluigi'],
+    blurb: 'Sneaky trickster. Steals buffs and plays dirty.',
+    passive: { name: 'Cheater', desc: "Waluigi's attacks ignore half of an enemy's Block." },
+    unlock: '',
+  },
 ];
 
 export const HEROES = Object.fromEntries(HERO_LIST.map((h) => [h.id, h])) as Record<HeroId, HeroDef>;
@@ -73,6 +132,8 @@ export function cardFitsHero(card: CardDef, hero: HeroDef): boolean {
 
 /** Badges that do nothing for a hero (no Jump/Hammer cards). */
 export function badgeFitsHero(id: string, hero: HeroDef): boolean {
+  // Banjo (Beak Buster) and Wario (Ground Pound) have Jump attacks; the other leads don't.
+  if (hero.quest) return id !== 'powerSmash' && (['banjo', 'wario'].includes(hero.id) || !['powerJump', 'spikeShield'].includes(id));
   if (hero.id === 'peach') return !['powerJump', 'powerSmash', 'spikeShield'].includes(id);
   if (hero.id === 'bowser') return id !== 'powerSmash';
   return true;
