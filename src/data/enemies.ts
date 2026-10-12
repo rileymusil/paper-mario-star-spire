@@ -228,6 +228,7 @@ const goombaKing: EnemyDef = {
         for (const e of c.livingEnemies()) c.applyStatus(e, 'strength', 2);
       },
     },
+    charge: atk('Royal Charge', 16, 'mario'),
   },
   ai: (self, c) => {
     self.mem.turn = (self.mem.turn ?? -1) + 1;
@@ -235,6 +236,20 @@ const goombaKing: EnemyDef = {
     const r = ['stomp', 'shake', 'cheer'][(self.mem.turn - 1) % 3];
     if (r === 'cheer' && minions(c) === 0) return 'summon';
     return r;
+  },
+  phase2: {
+    name: 'Royal Rage!',
+    desc: 'Enraged: stronger, and charges with his whole royal weight.',
+    enter: (self, c) => {
+      c.applyStatus(self, 'strength', 2);
+      c.summon('goomba');
+    },
+    ai: (self, c) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      const r = ['charge', 'shake', 'stomp', 'cheer'][self.mem.turn % 4];
+      if (r === 'cheer' && minions(c) === 0) return 'summon';
+      return r;
+    },
   },
 };
 
@@ -245,6 +260,7 @@ const buzzar: EnemyDef = {
     gust: atk('Wind Blast', 5, 'all', { contact: false, anim: 'cast', apply: [['shrunk', 1, 'target']] }),
     grab: atk('Snatch', 15, 'partner', { anim: 'jump' }),
     peck: atk('Peck Flurry', 4, 'random', { hits: 3 }),
+    dive: atk('Dive Bomb', 18, 'random', { anim: 'jump' }),
     hatch: {
       name: 'Call Babies', kind: 'summon', tgt: 'none', anim: 'cast',
       fx: (c) => {
@@ -259,6 +275,20 @@ const buzzar: EnemyDef = {
     const r = ['grab', 'peck', 'hatch'][(self.mem.turn - 1) % 3];
     if (r === 'hatch' && minions(c) > 0) return 'gust';
     return r;
+  },
+  phase2: {
+    name: 'Takes to the sky!',
+    desc: "Airborne: now Flying, so Hammers can't reach. Dive-bombs from above.",
+    enter: (self, c) => {
+      if (!self.traits.includes('flying')) self.traits.push('flying');
+      c.emit({ t: 'text', target: self.uid, text: 'Flying!', color: '#9fe3ff' });
+    },
+    ai: (self, c) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      const r = ['dive', 'gust', 'peck', 'hatch'][self.mem.turn % 4];
+      if (r === 'hatch' && minions(c) > 0) return 'grab';
+      return r;
+    },
   },
 };
 
@@ -284,6 +314,18 @@ const lily: EnemyDef = {
     const r = ['petals', 'pollen', 'lash', 'bloom'][(self.mem.turn - 1) % 4];
     if (r === 'bloom' && minions(c) === 0) return 'garden';
     return r;
+  },
+  phase2: {
+    name: 'Full Bloom!',
+    desc: 'In full bloom: gains Strength at the end of each of her turns.',
+    enter: (self, c) => {
+      c.applyStatus(self, 'growth', 1);
+      c.summon(c.rng.pick(['bubulb_green', 'bubulb_yellow']));
+    },
+    ai: (self) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      return ['lash', 'petals', 'pollen'][self.mem.turn % 3];
+    },
   },
 };
 
@@ -407,6 +449,16 @@ const tubba: EnemyDef = {
     flex: { name: 'Flex', kind: 'buff', tgt: 'self', anim: 'cast', block: 20, apply: [['strength', 2, 'self']] },
   },
   ai: cycle('slam', 'quake', 'gobble', 'flex'),
+  phase2: {
+    name: 'Loses his cool!',
+    desc: 'Furious: his thick hide cracked (no armor), but he hits much harder.',
+    enter: (self, c) => {
+      self.armor = 0;
+      c.applyStatus(self, 'strength', 2);
+      c.emit({ t: 'text', target: self.uid, text: 'Armor cracked!', color: '#9fe3ff' });
+    },
+    ai: cycle('quake', 'gobble', 'slam', 'flex'),
+  },
 };
 
 const gourmet: EnemyDef = {
@@ -416,8 +468,15 @@ const gourmet: EnemyDef = {
     cutlery: atk('Fork & Knife', 6, 'random', { hits: 3 }),
     belly: atk('Belly Bounce', 10, 'all', { anim: 'jump' }),
     feast: { name: 'Feast', kind: 'buff', tgt: 'self', anim: 'cast', apply: [['strength', 2, 'self']], fx: (c, self) => c.heal(self, 15) },
+    cake: atk('Cake Toss', 8, 'all', { contact: false, anim: 'cast', apply: [['soft', 1, 'target']] }),
   },
   ai: cycle('cutlery', 'belly', 'cutlery', 'feast'),
+  phase2: {
+    name: 'Second helping!',
+    desc: 'Dessert time: tosses cakes that make your team Soft.',
+    enter: (self, c) => c.gainBlock(self, 25),
+    ai: cycle('cake', 'cutlery', 'belly', 'feast'),
+  },
 };
 
 const raphael: EnemyDef = {
@@ -434,6 +493,7 @@ const raphael: EnemyDef = {
       },
     },
     perch: { name: 'Perch', kind: 'defend', tgt: 'self', anim: 'none', block: 18 },
+    talon: atk('Talon Dive', 9, 'random', { hits: 2, anim: 'jump' }),
   },
   ai: (self, c) => {
     self.mem.turn = (self.mem.turn ?? -1) + 1;
@@ -441,6 +501,20 @@ const raphael: EnemyDef = {
     const r = ['peck', 'gale', 'call'][(self.mem.turn - 1) % 3];
     if (r === 'call' && minions(c) > 0) return 'perch';
     return r;
+  },
+  phase2: {
+    name: 'Storm of wings!',
+    desc: 'The whole flock is coming. Talon dives strike twice.',
+    enter: (_self, c) => {
+      c.summon('swooper');
+      c.summon('swooper');
+    },
+    ai: (self, c) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      const r = ['talon', 'gale', 'peck', 'call'][self.mem.turn % 4];
+      if (r === 'call' && minions(c) > 0) return 'talon';
+      return r;
+    },
   },
 };
 
@@ -457,6 +531,17 @@ const ninji: EnemyDef = {
   ai: rand(['flurry', 2], ['ice', 2], ['leap', 1]),
 };
 
+/** Bowser gets angry (once) when Kammy is gone. */
+const bowserEnrage = (self: Unit, c: Combat) => {
+  const kammyDown = !c.livingEnemies().some((e) => e.id === 'kammy');
+  if (kammyDown && !self.mem.enraged && (self.mem.turn > 0 || self.mem.phase2)) {
+    self.mem.enraged = true;
+    c.applyStatus(self, 'strength', 3);
+    c.emit({ t: 'text', target: self.uid, text: 'Bowser is enraged!', color: '#ff5a2a' });
+  }
+};
+const anyBuffed = (c: Combat) => c.livingAllies().some((a) => (a.st.strength ?? 0) > 0 || (a.st.static ?? 0) > 0);
+
 const bowser: EnemyDef = {
   id: 'bowser', name: 'Bowser', sprite: 'bowser', hp: [290, 290], traits: ['boss', 'spiky'],
   desc: 'Final boss. Spiky shell: jumping on him hurts. Enrages when Kammy falls.',
@@ -464,6 +549,7 @@ const bowser: EnemyDef = {
     claw: atk('Claw Swipe', 16, 'random'),
     fire: atk('Fire Breath', 8, 'all', { contact: false, anim: 'cast', apply: [['burn', 2, 'target']] }),
     spin: atk('Shell Spin', 5, 'random', { hits: 4 }),
+    rod: atk('Star Rod Blast', 13, 'all', { contact: false, anim: 'cast' }),
     power: { name: 'Power Up', kind: 'buff', tgt: 'self', anim: 'cast', block: 15, apply: [['strength', 2, 'self']] },
     shock: atk('Shockwave', 6, 'all', {
       contact: false, anim: 'jump',
@@ -480,15 +566,23 @@ const bowser: EnemyDef = {
   },
   ai: (self, c) => {
     self.mem.turn = (self.mem.turn ?? -1) + 1;
-    const kammyDown = !c.livingEnemies().some((e) => e.id === 'kammy');
-    if (kammyDown && !self.mem.enraged && self.mem.turn > 0) {
-      self.mem.enraged = true;
-      c.applyStatus(self, 'strength', 3);
-      c.emit({ t: 'text', target: self.uid, text: 'Bowser is enraged!', color: '#ff5a2a' });
-    }
-    const buffed = c.livingAllies().some((a) => (a.st.strength ?? 0) > 0 || (a.st.static ?? 0) > 0);
-    const seq = ['claw', 'fire', 'spin', 'power', 'claw', buffed ? 'shock' : 'spin'];
+    bowserEnrage(self, c);
+    const seq = ['claw', 'fire', 'spin', 'power', 'claw', anyBuffed(c) ? 'shock' : 'spin'];
     return seq[self.mem.turn % seq.length];
+  },
+  phase2: {
+    name: 'Star Rod power!',
+    desc: 'Powered by the Star Rod: gains Strength every turn and blasts your whole team.',
+    enter: (self, c) => {
+      c.gainBlock(self, 30);
+      c.applyStatus(self, 'growth', 1);
+    },
+    ai: (self, c) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      bowserEnrage(self, c);
+      const seq = ['rod', 'claw', 'spin', 'fire', anyBuffed(c) ? 'shock' : 'claw'];
+      return seq[self.mem.turn % seq.length];
+    },
   },
 };
 

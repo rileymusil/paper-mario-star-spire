@@ -270,6 +270,31 @@ describe('combat rules', () => {
     expect(cardPool(run, 'uncommon')).toContain('shellBomb');
   });
 
+  it('bosses enter their second phase once, at half HP', () => {
+    for (const act of ACTS) {
+      for (const boss of act.bosses) {
+        const c = fight([...(act.bossParty[boss] ?? []), boss]);
+        const b = c.enemies.find((e) => e.id === boss)!;
+        expect(ENEMIES[boss].phase2, boss).toBeTruthy();
+        c.hit(c.mario, b, Math.ceil(b.maxHp * 0.4), { pierce: true }, true);
+        expect(b.mem.phase2, `${boss} early`).toBeFalsy();
+        c.hit(c.mario, b, Math.ceil(b.maxHp * 0.15), { pierce: true }, true);
+        expect(b.mem.phase2, boss).toBe(true);
+        expect(c.takeEvents().filter((e) => e.t === 'phase'), boss).toHaveLength(1);
+        // the new intent comes from a real move, and later hits don't re-trigger
+        expect(ENEMIES[boss].moves[b.intent!.move], boss).toBeTruthy();
+        c.hit(c.mario, b, 5, { pierce: true }, true);
+        expect(c.takeEvents().some((e) => e.t === 'phase'), boss).toBe(false);
+        // the phase-2 AI runs for a while without errors
+        for (let t = 0; t < 12 && !c.isOver(); t++) c.chooseIntent(b);
+      }
+    }
+    // Buzzar takes flight: hammers can no longer reach it
+    const z = fight(['buzzar']);
+    z.hit(z.mario, z.enemies[0], 70, { pierce: true }, true);
+    expect(z.canReach('hammer', z.enemies[0])).toBe(false);
+  });
+
   it('partner passives apply while the partner is up, scaled by rank', () => {
     const withPartner = (id: string, rank: 0 | 1 | 2 = 0) => (run: RunState) => {
       run.partners.push({ id: id as any, hp: 20, maxHp: 20, rank, field: true });

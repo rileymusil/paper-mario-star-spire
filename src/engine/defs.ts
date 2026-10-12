@@ -60,6 +60,8 @@ export interface EnemyDef {
   onHurt?: (self: Unit, c: Combat, loss: number) => void;
   /** return true if the enemy handled its own death (e.g. Dry Bones collapsing) */
   onDeath?: (self: Unit, c: Combat, how: { pierce?: boolean; fire?: boolean }) => boolean | void;
+  /** boss second phase: starts once HP first drops to `at` (default half); its moves live in `moves` */
+  phase2?: { at?: number; name: string; desc: string; enter?: (self: Unit, c: Combat) => void; ai: (self: Unit, c: Combat) => string };
   desc: string;
 }
 

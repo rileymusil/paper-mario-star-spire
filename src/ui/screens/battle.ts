@@ -189,6 +189,7 @@ export class BattleView {
     if (!v || v.gone) return;
     v.root.classList.toggle('dead', u.dead);
     v.root.classList.toggle('ko', u.dead && u.side === 'ally');
+    v.root.classList.toggle('phase2', !!u.mem.phase2 && !u.dead);
     const pile = u.side === 'enemy' && u.dead && u.mem.revive;
     v.bars.replaceChildren(
       u.dead && u.side === 'enemy' && !pile ? '' : hpBar(u.hp, u.maxHp, u.block, u.side),
@@ -316,7 +317,7 @@ export class BattleView {
       intentLine = `<br><b>Next:</b> ${it.name}${it.dmg ? ` (${this.previewDamage(u, it)}${it.hits && it.hits > 1 ? '×' + it.hits : ''} dmg)` : ''}${tgt ? ` → ${tgt}` : ''}`;
       if (move.apply?.length) intentLine += `, applies ${move.apply.map(([s, n]) => `${s} ${n}`).join(', ')}`;
     }
-    return `<b>${u.name}</b> ${traits.map((t) => `<span class="trait">${t}</span>`).join(' ')}<br>HP ${Math.max(0, u.hp)}/${u.maxHp}${u.armor ? ` · Armor ${u.armor}` : ''}<br><span class="desc">${def.desc}</span>${intentLine}`;
+    return `<b>${u.name}</b> ${traits.map((t) => `<span class="trait">${t}</span>`).join(' ')}<br>HP ${Math.max(0, u.hp)}/${u.maxHp}${u.armor ? ` · Armor ${u.armor}` : ''}<br><span class="desc">${def.desc}</span>${u.mem.phase2 && def.phase2 ? `<br><b>Phase 2:</b> ${def.phase2.desc}` : ''}${intentLine}`;
   }
 
   private renderControls() {
@@ -1080,6 +1081,19 @@ export class BattleView {
         if (v) this.popText(v, e.text, 'note', e.color);
         else this.toast(e.text, e.color);
         await this.wait(260);
+        return;
+      }
+      case 'phase': {
+        const v = this.views.get(e.target);
+        const u = c.unit(e.target);
+        if (!v || !u) return;
+        sfx.bigHit();
+        this.banner(`${u.name}: ${e.text}`, 'phase');
+        this.el.classList.remove('quake');
+        void this.el.offsetWidth;
+        this.el.classList.add('quake');
+        this.refreshUnit(u);
+        await this.wait(1100);
         return;
       }
       case 'flee': {

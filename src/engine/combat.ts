@@ -162,6 +162,8 @@ export class Combat {
   queue: string[] = [];
   niceCount = 0;
   damageDealt = 0;
+  /** enemy whose action is resolving (so a phase change doesn't re-pick its intent mid-move) */
+  private acting: string | null = null;
   /** cards played so far this turn */
   playedThisTurn = 0;
   /** cards drawn by Encyclopedia this turn */
@@ -573,6 +575,7 @@ export class Combat {
   enemyAct(uid: string, guarded: boolean) {
     const e = this.unit(uid);
     if (!e || e.dead || !e.intent) return;
+    this.acting = uid;
     const move = ENEMIES[e.id].moves[e.intent.move];
     const targets = this.moveTargets(e, move);
     if (guarded && (move.dmg ?? 0) > 0) {
@@ -591,6 +594,7 @@ export class Combat {
       for (const u of list) this.applyStatus(u, id, n);
     }
     move.fx?.(this, e, targets[0]);
+    this.acting = null;
     if (!e.dead) this.endEnemyAction(e);
     this.checkEnd();
   }
@@ -609,7 +613,19 @@ export class Combat {
   }
 
   chooseIntent(e: Unit) {
-    this.setIntent(e, ENEMIES[e.id].ai(e, this));
+    const def = ENEMIES[e.id];
+    this.setIntent(e, e.mem.phase2 && def.phase2 ? def.phase2.ai(e, this) : def.ai(e, this));
+  }
+
+  /** Start a boss's second phase the first time its HP drops to the threshold. */
+  private checkPhase(u: Unit) {
+    const p = u.side === 'enemy' ? ENEMIES[u.id].phase2 : undefined;
+    if (!p || u.dead || u.hp <= 0 || u.mem.phase2 || u.hp > u.maxHp * (p.at ?? 0.5)) return;
+    u.mem.phase2 = true;
+    u.mem.turn = -1;
+    this.emit({ t: 'phase', target: u.uid, text: p.name });
+    p.enter?.(u, this);
+    if (this.acting !== u.uid) this.chooseIntent(u);
   }
 
   /** Set an enemy's next move (and pick its target). */
@@ -726,6 +742,7 @@ export class Combat {
     const loss = Math.min(target.hp, d - blocked);
     target.hp -= d - blocked;
     this.emit({ t: 'hit', target: target.uid, src: src?.uid, dmg: d - blocked, blocked, guarded });
+    this.checkPhase(target);
     if (src?.side === 'ally' && target.side === 'enemy') this.damageDealt += loss;
     if (d - blocked > 0 && target.st.sleep) {
       delete target.st.sleep;
@@ -749,6 +766,7 @@ export class Combat {
     if (u.dead || n <= 0) return;
     u.hp -= n;
     this.emit({ t: 'hit', target: u.uid, dmg: n, blocked: 0 });
+    this.checkPhase(u);
     if (u.hp <= 0) this.kill(u, {});
   }
 

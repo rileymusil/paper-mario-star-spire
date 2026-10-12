@@ -201,6 +201,7 @@ export type CEvent =
   | { t: 'pose'; target: string; pose: string; sprite?: string }
   | { t: 'text'; target?: string; text: string; color?: string }
   | { t: 'flee'; target: string }
+  | { t: 'phase'; target: string; text: string }
   | { t: 'fp'; n: number }
   | { t: 'star'; n: number }
   | { t: 'coins'; n: number }
