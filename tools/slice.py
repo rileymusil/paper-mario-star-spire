@@ -29,6 +29,7 @@ EXTRA_BG = {
     "player sprite sheet": [(84, 165, 75)],
     "Items": [],
     "Battle Extras & HUD": [(255, 255, 255)],
+    "Slugger (Paper Mario N64-Style)": [(73, 67, 89), (50, 16, 126)],
 }
 # Dilation radius used to merge near-touching parts of one sprite.
 DILATE = {
@@ -37,6 +38,26 @@ DILATE = {
     "Battle Extras & HUD": 0,
 }
 SKIP = {"Backgrounds", "Title Screen", "Fonts"}
+# Custom sheets on an opaque background: only background pixels connected to the
+# sheet's edge are removed, so white eyes and gloves inside a sprite survive.
+FLOOD_BG = {
+    "Dimentio (Paper Mario N64-Style)",
+    "Banjo & Kazooie (Paper Mario N64-Style)",
+    "Goombella (Paper Mario N64-Style)",
+    "Fox (Paper Mario N64-Style)",
+    "Geno (Paper Mario N64-Style)",
+    "Link (Paper Mario N64-Style)",
+    "Wario (Paper Mario N64-Style)",
+    "Ashley (Paper Mario N64-Style)",
+}
+# Solid boxes drawn behind each frame on some custom sheets. Every pixel of exactly
+# this color is background (none of these sprites use it themselves).
+CELL_BG = {
+    "Link (Paper Mario N64-Style)": [(163, 73, 164)],
+    "Fox (Paper Mario N64-Style)": [(163, 73, 164)],
+    "Wario (Paper Mario N64-Style)": [(163, 73, 164)],
+    "Ashley (Paper Mario N64-Style)": [(174, 199, 218)],
+}
 
 
 def sheet_key(path: Path) -> str:
@@ -59,7 +80,15 @@ def load_mask(path: Path):
     rgb, alpha = a[..., :3], a[..., 3]
     bgs = [tuple(int(v) for v in a[0, 0, :3])] + EXTRA_BG.get(key, [])
     mask = alpha > 0
-    for c in bgs:
+    if key in FLOOD_BG:
+        bg = np.all(rgb == np.array(bgs[0]), axis=-1) & (alpha > 0)
+        lab, _ = ndimage.label(bg)
+        edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+        mask &= ~np.isin(lab, list(edge))
+    else:
+        for c in bgs:
+            mask &= ~np.all(rgb == np.array(c), axis=-1)
+    for c in CELL_BG.get(key, []):
         mask &= ~np.all(rgb == np.array(c), axis=-1)
     # Credits footer: everything below the last row that still contains the main bg color.
     main = np.all(rgb == np.array(bgs[0]), axis=-1)
