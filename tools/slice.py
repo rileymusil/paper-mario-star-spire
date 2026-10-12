@@ -216,7 +216,8 @@ def build():
     cuts = {}
     for name, ic in icons.items():
         im, mask, boxes = sheet_data(cache, ic["sheet"])
-        cuts[name] = render(im, mask, boxes, ic["f"])
+        cut_ = render(im, mask, boxes, ic["f"])
+        cuts[name] = cut_[::2, ::2] if ic.get("half") else cut_  # "half": nearest-neighbour downscale for big sheets
     W, x, y, rowh = 512, 0, 0, 0
     for name, a in cuts.items():
         h, w = a.shape[:2]
