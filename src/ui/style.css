@@ -521,6 +521,18 @@ b {
 .card.up .card-text .num {
   color: #138a35;
 }
+.card-text .num.buffed,
+.card-text .num.nerfed {
+  color: #fff;
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.card-text .num.buffed {
+  background: #23943f;
+}
+.card-text .num.nerfed {
+  background: #b0362a;
+}
 .card-text .kw {
   color: #2f5fb8;
   font-weight: 900;

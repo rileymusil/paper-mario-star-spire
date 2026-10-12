@@ -299,6 +299,18 @@ export class Combat {
     return [];
   }
 
+  /**
+   * A card's printed damage after its source's modifiers (Strength, Shrunk, Charge, badges),
+   * against a plain target with no armor or debuffs.
+   */
+  cardDamage(inst: CardInst, base: number, multiHit = false): number {
+    const src = this.cardSource(inst);
+    if (!src) return base;
+    const plain: Unit = { uid: '', side: 'enemy', id: '', name: '', sprite: '', pose: 'idle', hp: 1, maxHp: 1, block: 0, armor: 0, st: {}, traits: [], dead: false, mem: {} };
+    // Charge only boosts the first hit, so leave it out of per-hit numbers.
+    return this.calc(src, plain, base, { kind: CARDS[inst.id].atk }, !multiHit);
+  }
+
   /** Why a card can't be played right now, or null if it can. */
   whyNot(inst: CardInst): string | null {
     const d = CARDS[inst.id];

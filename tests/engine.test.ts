@@ -192,6 +192,21 @@ describe('combat rules', () => {
     expect(jp.mario.dmg).toBe(3);
   });
 
+  it('card damage numbers follow the source unit modifiers', () => {
+    const c = fight(['goomba']);
+    const jump = c.hand[give(c, 'jump')];
+    expect(c.cardDamage(jump, 5)).toBe(5);
+    c.mario.st.strength = 2;
+    expect(c.cardDamage(jump, 5)).toBe(7);
+    c.mario.st.charge = 4;
+    expect(c.cardDamage(jump, 5)).toBe(11);
+    expect(c.cardDamage(jump, 5, true)).toBe(7);
+    c.mario.st.shrunk = 1;
+    expect(c.cardDamage(jump, 8, true)).toBe(7);
+    // Kooper's card uses Kooper's stats, not Mario's
+    expect(c.cardDamage(c.hand[give(c, 'shellToss')], 7)).toBe(7);
+  });
+
   it('flags random outcomes in previews', () => {
     const c = fight(['goomba', 'goomba', 'goomba'], (run) => {
       run.partners.push({ id: 'bombette', hp: 18, maxHp: 18, rank: 0, field: true });

@@ -11,7 +11,7 @@ import { stage } from './stage';
 
 export function markup(text: string): string {
   return esc(text)
-    .replace(/\{([^}]+)\}/g, '<b class="num">$1</b>')
+    .replace(/\{([^}|]+)(?:\|(\w+))?\}/g, (_m, n, cls) => `<b class="num${cls ? ` ${cls}` : ''}">${n}</b>`)
     .replace(/\[([^\]]+)\]/g, '<span class="kw">$1</span>');
 }
 
@@ -89,7 +89,8 @@ export function cardEl(inst: Pick<CardInst, 'id' | 'up'> & Partial<CardInst>, o:
   const up = o.up ?? (o.run ? isUpgraded(o.run, inst as CardInst) : inst.up);
   const cost = o.combat && inst.uid ? o.combat.cost(inst as CardInst) : up && d.costUp !== undefined ? d.costUp : d.cost;
   const owner = d.owner;
-  const text = d.text(up) + (d.exhaust && !(up && d.exhaustUp === false) && !/Exhaust/.test(d.text(up)) ? ' Exhaust.' : '');
+  let text = d.text(up) + (d.exhaust && !(up && d.exhaustUp === false) && !/Exhaust/.test(d.text(up)) ? ' Exhaust.' : '');
+  if (o.combat && inst.uid && d.type === 'attack') text = liveDamage(text, o.combat, inst as CardInst);
   const typeLabel = d.type[0].toUpperCase() + d.type.slice(1) + (d.atk ? ` · ${d.atk === 'jump' ? 'Jump' : d.atk === 'hammer' ? 'Hammer' : d.atk === 'ground' ? 'Ground' : 'Ranged'}` : '');
   const el = h(
     'div.card',
@@ -104,6 +105,16 @@ export function cardEl(inst: Pick<CardInst, 'id' | 'up'> & Partial<CardInst>, o:
   );
   tip(el, () => keywordBox(keywordsIn(d.text(up))) ?? `<b>${esc(d.name)}</b>`);
   return el;
+}
+
+/** Rewrite a card's damage numbers ({n} damage, then {n} to..., {n} instead) for its source's current modifiers. */
+function liveDamage(text: string, c: Combat, inst: CardInst): string {
+  const multiHit = /\btwice\b|\btimes\b/.test(text);
+  return text.replace(/\{(\d+)\}(?= damage| to every other| instead)/g, (m, n) => {
+    const base = Number(n);
+    const live = c.cardDamage(inst, base, multiHit);
+    return live === base ? m : `{${live}|${live > base ? 'buffed' : 'nerfed'}}`;
+  });
 }
 
 // ---------- small widgets ----------
