@@ -4,6 +4,8 @@ import { loadMeta, loadRun, saveMeta, saveRun, unlockForAct, type Meta } from '.
 import { newRun } from '../engine/run';
 import { ACTS } from '../data/acts';
 import { starLevel } from '../data/levels';
+import { heroOf, showHero } from '../data/heroes';
+import type { HeroId } from '../engine/types';
 import { BADGES, ITEMS, PARTNERS } from '../data/registry';
 import { clear, h } from './dom';
 import { badgeTip, button, deckGrid, hideTip, itemTip, modal, tip } from './components';
@@ -49,8 +51,8 @@ export class App {
     this.render();
   }
 
-  startRun(starter: (typeof this.meta.starters)[number], level: number) {
-    this.run = newRun({ starter, level });
+  startRun(hero: HeroId, starter: (typeof this.meta.starters)[number], level: number) {
+    this.run = newRun({ hero, starter, level });
     this.meta.runs++;
     saveMeta(this.meta);
     this.mode = 'run';
@@ -89,6 +91,7 @@ export class App {
     this.battle = null;
     for (const o of stage().el.querySelectorAll('.overlay')) o.remove();
     clear(this.screenEl);
+    showHero(this.run && this.mode === 'run' ? heroOf(this.run) : null);
     let view: HTMLElement;
     if (this.mode === 'starter') view = renderStarter(this);
     else if (this.mode === 'title' || !this.run) view = renderTitle(this);
@@ -140,7 +143,7 @@ export class App {
     const left = h(
       'div.hud-left',
       null,
-      tip(h('div.hud-stat.hp', null, icon('heart', 1.5), h('span', null, `${Math.max(0, marioHp)}/${run.mario.maxHp}`)), () => 'Mario\'s HP. If it hits 0, the run ends.'),
+      tip(h('div.hud-stat.hp', null, icon('heart', 1.5), h('span', null, `${Math.max(0, marioHp)}/${run.mario.maxHp}`)), () => `${heroOf(run).name}'s HP. If it hits 0, the run ends.`),
       ...run.partners.map((p) => {
         const live = c?.allies.find((u) => u.id === p.id);
         const hp = live ? live.hp : p.hp;

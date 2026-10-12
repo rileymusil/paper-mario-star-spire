@@ -1,6 +1,7 @@
 import type { App } from '../app';
 import type { RunState, ScreenState } from '../../engine/types';
 import { PARTNERS } from '../../data/registry';
+import { heroOf, heroText } from '../../data/heroes';
 import { canUpgrade, completeNode, healTeam, restHeal, upgradeCard } from '../../engine/run';
 import { h } from '../dom';
 import { button } from '../components';
@@ -18,7 +19,7 @@ export function renderRest(app: App, run: RunState, s: Extract<ScreenState, { ki
     : h(
         'div.rest-choices',
         null,
-        choice(iconFit('heart', 56), 'Rest', `Heal Mario ${healAmt} HP and every partner ${Math.round(pct * 100)}%. KO'd partners wake up.`, () => {
+        choice(iconFit('heart', 56), 'Rest', heroText(`Heal Mario ${healAmt} HP and every partner ${Math.round(pct * 100)}%. KO'd partners wake up.`), () => {
           healTeam(run, pct);
           s.used = true;
           sfx.heal();
@@ -44,7 +45,7 @@ export function renderRest(app: App, run: RunState, s: Extract<ScreenState, { ki
     'div.campfire',
     null,
     ...run.partners.filter((p) => p.field).map((p) => portrait(PARTNERS[p.id].sprite, 90, true)),
-    portrait('mario', 100, true),
+    portrait(heroOf(run).sprite, 100, true),
     h('div.fire'),
   );
   return h(

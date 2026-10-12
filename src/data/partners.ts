@@ -1,5 +1,6 @@
 import type { PartnerDef } from '../engine/defs';
 import type { PartnerId } from '../engine/types';
+import { heroText } from './heroes';
 
 export const PARTNER_LIST: PartnerDef[] = [
   { id: 'goombario', name: 'Goombario', sprite: 'goombario', icon: 'p_goombario', hp: 18, color: '#b0703a', blurb: 'Scout. Softens foes, draws cards, bonks twice.', starters: ['headbonk', 'tattle'],
@@ -29,7 +30,7 @@ export const RANK_HP = 6;
 
 /** "Name: what it does" for a partner's passive at a rank. */
 export function passiveText(p: PartnerDef, rank: number): string {
-  return `${p.passive.name}: ${p.passive.desc(p.passive.values[rank] ?? p.passive.values[0])}`;
+  return heroText(`${p.passive.name}: ${p.passive.desc(p.passive.values[rank] ?? p.passive.values[0])}`);
 }
 
 export const ALL_PARTNERS: PartnerId[] = PARTNER_LIST.map((p) => p.id);

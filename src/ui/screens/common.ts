@@ -2,7 +2,8 @@ import type { App } from '../app';
 import type { CardInst, PartnerId, Reward, RunState } from '../../engine/types';
 import { BADGES, CARDS, ITEMS, PARTNERS } from '../../data/registry';
 import { RANK_NAMES, passiveText } from '../../data/partners';
-import { claimBadge, claimCard, claimCoins, claimItem, claimSuperBlock, parseCardId, rankUp, setField } from '../../engine/run';
+import { heroText } from '../../data/heroes';
+import { claimBadge, claimCard, claimCoins, claimItem, claimSuperBlock, parseCardId, partySlots, rankUp, setField } from '../../engine/run';
 import { h } from '../dom';
 import { badgeTip, button, cardEl, deckGrid, itemTip, modal, tip } from '../components';
 import { iconFit, portrait } from '../sprite';
@@ -116,7 +117,7 @@ export function partyModal(app: App, run: RunState, onDone?: () => void) {
   const body = h('div.party');
   const draw = () => {
     body.replaceChildren(
-      h('div.party-hint', null, 'Up to 2 partners fight beside Mario. Reserve partners sit out, and so do their cards.'),
+      h('div.party-hint', null, heroText(`Up to ${partySlots(run)} partner${partySlots(run) > 1 ? 's' : ''} fight${partySlots(run) > 1 ? '' : 's'} beside Mario. Reserve partners sit out, and so do their cards.`)),
       h(
         'div.party-grid',
         null,

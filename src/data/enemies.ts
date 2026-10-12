@@ -612,6 +612,70 @@ const kammy: EnemyDef = {
   ai: cycle('blast', 'empower', 'blast', 'heal'),
 };
 
+// ---------- Bowser's run: the final boss is Mario ----------
+
+const marioEnrage = (self: Unit, c: Combat) => {
+  const luigiDown = !c.livingEnemies().some((e) => e.id === 'luigi_boss');
+  if (luigiDown && !self.mem.enraged && (self.mem.turn > 0 || self.mem.phase2)) {
+    self.mem.enraged = true;
+    c.applyStatus(self, 'strength', 3);
+    c.emit({ t: 'text', target: self.uid, text: 'Mario is furious!', color: '#ff5a2a' });
+  }
+};
+
+const marioBoss: EnemyDef = {
+  id: 'mario_boss', name: 'Mario', sprite: 'mario', hp: [340, 340], traits: ['boss'],
+  desc: 'Final boss of Bowser\'s run. The hero himself. Gets serious if Luigi falls.',
+  moves: {
+    jump: atk('Super Jump', 9, 'random', { hits: 2, anim: 'jump' }),
+    hammer: atk('Ultra Hammer', 26, 'mario', { anim: 'lunge' }),
+    beam: atk('Star Beam', 10, 'all', { contact: false, anim: 'cast', apply: [['soft', 1, 'target']] }),
+    focus: { name: 'Focus', kind: 'buff', tgt: 'self', anim: 'cast', block: 20, apply: [['strength', 2, 'self']] },
+    storm: atk('Star Storm', 7, 'all', { hits: 2, contact: false, anim: 'cast' }),
+  },
+  ai: (self, c) => {
+    self.mem.turn = (self.mem.turn ?? -1) + 1;
+    marioEnrage(self, c);
+    return ['jump', 'hammer', 'beam', 'focus'][self.mem.turn % 4];
+  },
+  phase2: {
+    name: 'The Star Spirits answer!',
+    desc: 'Blessed by the Star Spirits: gains Strength every turn and calls down Star Storms.',
+    enter: (self, c) => {
+      c.gainBlock(self, 30);
+      c.applyStatus(self, 'growth', 1);
+    },
+    ai: (self, c) => {
+      self.mem.turn = (self.mem.turn ?? -1) + 1;
+      marioEnrage(self, c);
+      return ['storm', 'hammer', 'jump', 'beam'][self.mem.turn % 4];
+    },
+  },
+};
+
+const luigiBoss: EnemyDef = {
+  id: 'luigi_boss', name: 'Luigi', sprite: 'luigi', hp: [80, 80], traits: ['minion'],
+  desc: "Mario's brother. Cheers him on and patches him up. Mario gets serious if Luigi falls.",
+  moves: {
+    jump: atk('Luigi Jump', 10, 'random', { anim: 'jump' }),
+    cheer: {
+      name: 'Go, Bro!', kind: 'buff', tgt: 'none', anim: 'cast',
+      fx: (c) => {
+        const m = c.livingEnemies().find((e) => e.id === 'mario_boss');
+        if (m) c.applyStatus(m, 'strength', 1);
+      },
+    },
+    patch: {
+      name: 'Mushroom', kind: 'heal', tgt: 'none', anim: 'cast',
+      fx: (c) => {
+        const m = c.livingEnemies().find((e) => e.id === 'mario_boss');
+        if (m) c.heal(m, 20);
+      },
+    },
+  },
+  ai: cycle('jump', 'cheer', 'jump', 'patch'),
+};
+
 // ---------- variants with new mechanics ----------
 
 const thornyPiranha: EnemyDef = {
@@ -727,6 +791,7 @@ export const ENEMY_LIST: EnemyDef[] = [
   goombaBro,
   bowser, kammy,
   thornyPiranha, cardShark, phantomBoo, fireBro, bobulk, koopatrol, pickpocket,
+  marioBoss, luigiBoss,
   scaled(fireBro, 'firebro3', 1.2, 3),
   scaled(phantomBoo, 'boo_phantom3', 1.3, 3),
 ];

@@ -4,6 +4,7 @@ import { Rng } from './rng';
 import { CARDS, ENEMIES, ITEMS, PARTNERS, SPECIALS } from '../data/registry';
 import { starLevel } from '../data/levels';
 import { cardPool } from './run';
+import { heroOf, type HeroDef } from '../data/heroes';
 
 export interface AttackOpts {
   hits?: number;
@@ -180,7 +181,8 @@ export class Combat {
   ) {
     this.items = run.items.slice();
     this.starMax = run.starMax + (this.has('deepFocus') ? 2 : 0);
-    this.allies.push(this.makeAlly('mario', 'Mario', 'mario', run.mario.hp, run.mario.maxHp));
+    const hero = heroOf(run);
+    this.allies.push(this.makeAlly('mario', hero.name, hero.sprite, run.mario.hp, run.mario.maxHp));
     for (const p of run.partners.filter((p) => p.field)) {
       const def = PARTNERS[p.id];
       const u = this.makeAlly(p.id, def.name, def.sprite, p.hp, p.maxHp);
@@ -268,6 +270,14 @@ export class Combat {
 
   get mario(): Unit {
     return this.allies[0];
+  }
+  /** The run's hero (Mario, Luigi, Peach or Bowser); the hero unit's uid is always 'mario'. */
+  get hero(): HeroDef {
+    return heroOf(this.run);
+  }
+  /** Hero-owned card ids the run can find at these rarities. */
+  heroCards(rarities: string[]): string[] {
+    return rarities.flatMap((r) => this.rewardPool(r)).filter((id) => CARDS[id].owner === 'mario');
   }
   has(badge: string): boolean {
     return this.run.badges.includes(badge);
@@ -427,6 +437,8 @@ export class Combat {
       if (hurt) this.heal(hurt, nanny);
     }
     if (this.powers.rainDance) for (const a of this.livingAllies()) this.gainBlock(a, this.powers.rainDance);
+    if (this.hero.id === 'peach') this.gainBlock(this.mario, 2);
+    if (this.powers.queenlyAura) for (const p of this.livingPartners()) this.gainBlock(p, this.powers.queenlyAura);
     if (this.powers.overclock) for (const a of this.livingAllies()) this.applyStatus(a, 'pumped', this.powers.overclock);
     if (this.powers.haunt) {
       const live = this.livingEnemies();
@@ -691,6 +703,7 @@ export class Combat {
           if (opts.kind === 'jump' && this.powers.spikeShield) d += this.powers.spikeShield;
           if (opts.kind === 'hammer' && this.has('powerSmash')) d += 2;
           if (this.has('lastStand') && src.hp <= src.maxHp * 0.3) d += 3;
+          if (this.hero.id === 'luigi') d += opts.kind === 'jump' ? 2 : opts.kind === 'hammer' ? -2 : 0;
         }
         if (this.has('pUpDDown')) d += 1;
       }
@@ -772,6 +785,15 @@ export class Combat {
       this.emit({ t: 'text', target: target.uid, text: 'Woke up!' });
     }
     if (target.side === 'enemy' && d - blocked > 0 && target.hp > 0) ENEMIES[target.id].onHurt?.(target, this, d - blocked);
+    if (src?.side === 'enemy' && target.uid === 'mario' && d - blocked > 0 && this.hero.id === 'luigi' && (target.mem.nerves ?? 0) < 4 && !target.dead && target.hp > 0) {
+      target.mem.nerves = (target.mem.nerves ?? 0) + 1;
+      this.applyStatus(target, 'strength', 1);
+      this.emit({ t: 'text', target: target.uid, text: 'Nervous!', color: '#7dff8a' });
+    }
+    if (src?.side === 'enemy' && !src.dead && target.uid === 'mario' && opts.contact !== false && this.hero.id === 'bowser') {
+      this.emit({ t: 'text', target: src.uid, text: 'Spiked!', color: '#ff7070' });
+      this.loseHp(src, 2);
+    }
     if (src?.side === 'enemy' && !src.dead && target.side === 'ally' && opts.contact !== false && this.powers.spinyTrap) {
       this.emit({ t: 'text', target: src.uid, text: 'Spiny!', color: '#ff7070' });
       this.loseHp(src, this.powers.spinyTrap);

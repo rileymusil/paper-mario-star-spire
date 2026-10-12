@@ -1,4 +1,4 @@
-import type { PartnerId, RunState } from './types';
+import type { HeroId, PartnerId, RunState } from './types';
 import { RUN_VERSION } from './run';
 import { MAX_LEVEL } from '../data/levels';
 
@@ -11,6 +11,8 @@ export interface Settings {
 
 export interface Meta {
   starters: PartnerId[];
+  /** unlocked heroes */
+  heroes: HeroId[];
   /** highest Star Level unlocked (0 until the first win) */
   maxLevel: number;
   /** from saves made before Star Levels */
@@ -26,6 +28,7 @@ const META_KEY = 'pmspire.meta';
 
 export const DEFAULT_META: Meta = {
   starters: ['goombario', 'kooper', 'bombette'],
+  heroes: ['mario'],
   maxLevel: 0,
   runs: 0,
   wins: 0,
@@ -54,6 +57,8 @@ function write(key: string, v: unknown) {
 export function loadMeta(): Meta {
   const m = read<Partial<Meta>>(META_KEY);
   const meta = { ...DEFAULT_META, ...m, settings: { ...DEFAULT_META.settings, ...m?.settings } };
+  meta.starters = [...meta.starters];
+  meta.heroes = [...meta.heroes];
   if (m?.maxLevel === undefined && m?.hardUnlocked) meta.maxLevel = 1;
   return meta;
 }
@@ -81,10 +86,21 @@ export function unlockForAct(m: Meta, act: number, level = 0): string[] {
       out.push(label);
     }
   };
+  const addHero = (id: HeroId, label: string) => {
+    if (!m.heroes.includes(id)) {
+      m.heroes.push(id);
+      out.push(label);
+    }
+  };
   if (act >= 1) add('parakarry', 'Parakarry can now be chosen as a starter!');
-  if (act >= 2) add('bow', 'Bow can now be chosen as a starter!');
+  if (act >= 2) {
+    add('bow', 'Bow can now be chosen as a starter!');
+    addHero('peach', 'Princess Peach is now playable!');
+  }
   if (act >= 3) {
     add('watt', 'Watt can now be chosen as a starter!');
+    addHero('luigi', 'Luigi is now playable!');
+    addHero('bowser', 'Bowser is now playable! (His final battle is against Mario.)');
     if (level >= m.maxLevel && m.maxLevel < MAX_LEVEL) {
       m.maxLevel = level + 1;
       out.push(m.maxLevel === 1 ? 'Star Levels unlocked! Pick Star Level 1 for a tougher climb.' : `Star Level ${m.maxLevel} unlocked!`);

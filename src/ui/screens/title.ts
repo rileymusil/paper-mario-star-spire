@@ -1,9 +1,10 @@
 import type { App } from '../app';
 import type { PartnerId } from '../../engine/types';
 import { PARTNER_LIST, passiveText } from '../../data/partners';
+import { HERO_LIST, HEROES, heroText, showHero, type HeroDef } from '../../data/heroes';
 import { ACTS } from '../../data/acts';
 import { LEVELS } from '../../data/levels';
-import { CARDS } from '../../data/registry';
+import { CARDS, PARTNERS } from '../../data/registry';
 import { h } from '../dom';
 import { button, cardEl, modal, tip } from '../components';
 import { portrait } from '../sprite';
@@ -41,67 +42,121 @@ export function renderTitle(app: App): HTMLElement {
 }
 
 export function renderStarter(app: App): HTMLElement {
-  let pick: PartnerId | null = null;
+  const unlockedHeroes = HERO_LIST.filter((hd) => app.meta.heroes.includes(hd.id));
+  // With only Mario unlocked there's nothing to choose: go straight to partners.
+  let hero: HeroDef | null = unlockedHeroes.length > 1 ? null : HEROES.mario;
   let level = app.meta.maxLevel;
-  const startBtn = button('Start!', () => pick && app.startRun(pick, level), 'big primary disabled');
-  const levelEl = h('div.level-picker');
-  const drawLevel = () => {
-    const step = (d: number) => () => {
-      level = Math.max(0, Math.min(app.meta.maxLevel, level + d));
-      sfx.select();
-      drawLevel();
-    };
-    levelEl.replaceChildren(
-      button('◀', step(-1), level <= 0 ? 'small disabled' : 'small'),
-      tip(
-        h('div.level-label', null, h('b', null, level ? `Star Level ${level}` : 'Normal'), h('small', null, level ? LEVELS[level - 1] : 'No extra challenge.'), level > 1 ? h('small.dim', null, `+ the ${level - 1} level${level > 2 ? 's' : ''} below`) : null),
-        () => (level ? LEVELS.slice(0, level).map((t, i) => `<b>${i + 1}.</b> ${t}`).join('<br>') : 'Win a run at your highest Star Level to unlock the next one.'),
-      ),
-      button('▶', step(1), level >= app.meta.maxLevel ? 'small disabled' : 'small'),
-    );
+  const root = h('div.starter-screen');
+  const draw = () => {
+    showHero(hero);
+    root.replaceChildren(...(hero ? partnerStep(hero) : heroStep()));
   };
-  drawLevel();
-  const cards = PARTNER_LIST.map((p) => {
-    const unlocked = app.meta.starters.includes(p.id);
-    const el = h(
-      'div.starter',
-      { class: unlocked ? '' : 'locked' },
-      h('div.starter-sprite', null, portrait(p.sprite, 110, true)),
-      h('div.starter-name', { style: { color: p.color } }, unlocked ? p.name : '???'),
-      unlocked ? h('div.starter-hp', null, `HP ${p.hp}`) : null,
-      h('div.starter-blurb', null, unlocked ? p.blurb : unlockHint(p.id)),
-      unlocked ? h('div.passive-line', null, passiveText(p, 0)) : null,
-    );
-    if (unlocked) {
-      el.addEventListener('click', () => {
-        pick = p.id;
-        sfx.select();
-        for (const s of grid.children) s.classList.remove('picked');
-        el.classList.add('picked');
-        startBtn.classList.remove('disabled');
-        preview.replaceChildren(...p.starters.map((id) => cardEl({ id, up: false })), ...['jump', 'hammer', 'guard'].map((id) => cardEl({ id, up: false }, { cls: 'dim' })));
-      });
-    }
-    return el;
-  });
-  const grid = h('div.starter-grid', null, ...cards);
-  const preview = h('div.starter-preview', null, h('div.hint', null, 'Pick a partner to see their starting cards.'));
-  return h(
-    'div.starter-screen',
-    null,
+
+  const heroStep = (): Node[] => [
     h('div.title-bg.dim', { style: { backgroundImage: 'url(bg/title_art.png)' } }),
-    h('div.screen-title', null, 'Choose your first partner'),
-    grid,
-    preview,
+    h('div.screen-title', null, 'Choose your hero'),
     h(
-      'div.starter-actions',
+      'div.starter-grid',
       null,
-      button('Back', () => app.showTitle()),
-      app.meta.maxLevel > 0 ? levelEl : null,
-      startBtn,
+      ...HERO_LIST.map((hd) => {
+        const unlocked = app.meta.heroes.includes(hd.id);
+        const el = h(
+          'div.starter.hero',
+          { class: unlocked ? '' : 'locked' },
+          h('div.starter-sprite', null, portrait(hd.sprite, 110, true)),
+          h('div.starter-name', { style: { color: hd.color } }, unlocked ? hd.name : '???'),
+          unlocked ? h('div.starter-hp', null, `HP ${hd.hp}${hd.partnerSlots < 2 ? ' · 1 partner' : ''}`) : null,
+          h('div.starter-blurb', null, unlocked ? hd.blurb : hd.unlock),
+          unlocked ? h('div.passive-line', null, `${hd.passive.name}: ${hd.passive.desc}`) : null,
+        );
+        if (unlocked)
+          el.addEventListener('click', () => {
+            sfx.select();
+            hero = hd;
+            draw();
+          });
+        return el;
+      }),
     ),
-  );
+    h('div.starter-actions', null, button('Back', () => app.showTitle())),
+  ];
+
+  const partnerStep = (hd: HeroDef): Node[] => {
+    let pick: PartnerId | null = hd.starter ?? null;
+    const startBtn = button('Start!', () => pick && app.startRun(hd.id, pick, level), `big primary${pick ? '' : ' disabled'}`);
+    const preview = h('div.starter-preview', null, h('div.hint', null, 'Pick a partner to see their starting cards.'));
+    const heroCards = [...new Set(hd.deck)].map((id) => cardEl({ id, up: false }, { cls: 'dim' }));
+    const showDeck = (p: PartnerId) => preview.replaceChildren(...PARTNERS[p].starters.map((id) => cardEl({ id, up: false })), ...heroCards);
+    let grid: HTMLElement;
+    if (hd.starter) {
+      const p = PARTNERS[hd.starter];
+      grid = h('div.starter-grid', null, h('div.starter.picked', null, h('div.starter-sprite', null, portrait(p.sprite, 110, true)), h('div.starter-name', { style: { color: p.color } }, p.name), h('div.starter-hp', null, `HP ${p.hp}`), h('div.starter-blurb', null, `${hd.name} always brings ${p.name}.`), h('div.passive-line', null, passiveText(p, 0))));
+      showDeck(hd.starter);
+    } else {
+      // Only partners that can ever be a starter are listed; the rest join during runs.
+      const cards = PARTNER_LIST.filter((p) => STARTER_POOL.includes(p.id)).map((p) => {
+        const unlocked = app.meta.starters.includes(p.id);
+        const el = h(
+          'div.starter',
+          { class: unlocked ? '' : 'locked' },
+          h('div.starter-sprite', null, portrait(p.sprite, 110, true)),
+          h('div.starter-name', { style: { color: p.color } }, unlocked ? p.name : '???'),
+          unlocked ? h('div.starter-hp', null, `HP ${p.hp}`) : null,
+          h('div.starter-blurb', null, unlocked ? heroText(p.blurb) : unlockHint(p.id)),
+          unlocked ? h('div.passive-line', null, passiveText(p, 0)) : null,
+        );
+        if (unlocked) {
+          el.addEventListener('click', () => {
+            pick = p.id;
+            sfx.select();
+            for (const s of grid.children) s.classList.remove('picked');
+            el.classList.add('picked');
+            startBtn.classList.remove('disabled');
+            showDeck(p.id);
+          });
+        }
+        return el;
+      });
+      grid = h('div.starter-grid', null, ...cards);
+    }
+    const levelEl = h('div.level-picker');
+    const drawLevel = () => {
+      const step = (d: number) => () => {
+        level = Math.max(0, Math.min(app.meta.maxLevel, level + d));
+        sfx.select();
+        drawLevel();
+      };
+      levelEl.replaceChildren(
+        button('◀', step(-1), level <= 0 ? 'small disabled' : 'small'),
+        tip(
+          h('div.level-label', null, h('b', null, level ? `Star Level ${level}` : 'Normal'), h('small', null, level ? LEVELS[level - 1] : 'No extra challenge.'), level > 1 ? h('small.dim', null, `+ the ${level - 1} level${level > 2 ? 's' : ''} below`) : null),
+          () => (level ? LEVELS.slice(0, level).map((t, i) => `<b>${i + 1}.</b> ${t}`).join('<br>') : 'Win a run at your highest Star Level to unlock the next one.'),
+        ),
+        button('▶', step(1), level >= app.meta.maxLevel ? 'small disabled' : 'small'),
+      );
+    };
+    drawLevel();
+    return [
+      h('div.title-bg.dim', { style: { backgroundImage: 'url(bg/title_art.png)' } }),
+      h('div.screen-title', null, hd.starter ? `${hd.name}'s team` : `Choose ${hd.name}'s first partner`),
+      grid,
+      preview,
+      h(
+        'div.starter-actions',
+        null,
+        button('Back', () => (unlockedHeroes.length > 1 ? ((hero = null), draw()) : app.showTitle())),
+        app.meta.maxLevel > 0 ? levelEl : null,
+        startBtn,
+      ),
+    ];
+  };
+
+  draw();
+  return root;
 }
+
+/** Partners that can be unlocked as a starting partner. */
+const STARTER_POOL: PartnerId[] = ['goombario', 'kooper', 'bombette', 'parakarry', 'bow', 'watt'];
 
 function unlockHint(id: PartnerId): string {
   const map: Partial<Record<PartnerId, string>> = {

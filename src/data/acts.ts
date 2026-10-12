@@ -87,7 +87,7 @@ export const ACTS: ActDef[] = [
     ],
     elite: [['hammerbro3', 'hammerbro3'], ['ninji_red', 'ninji_blue', 'ninji_yellow'], ['albino3', 'bubulb_blue3'], ['koopatrol', 'koopatrol'], ['firebro3', 'ninji_thief']],
     bosses: ['bowser'],
-    bossParty: { bowser: ['kammy'] },
+    bossParty: { bowser: ['kammy'], mario_boss: ['luigi_boss'] },
     shopkeeper: 'twirler',
   },
 ];

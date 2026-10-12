@@ -3,6 +3,7 @@ import type { Combat } from '../engine/combat';
 import { BADGES, CARDS, ITEMS, PARTNERS, STATUSES } from '../data/registry';
 import { KEYWORDS } from '../data/misc';
 import { isUpgraded } from '../engine/run';
+import { HEROES, heroText } from '../data/heroes';
 import { esc, h } from './dom';
 import { icon, iconFit } from './sprite';
 import { stage } from './stage';
@@ -90,6 +91,7 @@ export function cardEl(inst: Pick<CardInst, 'id' | 'up'> & Partial<CardInst>, o:
   const cost = o.combat && inst.uid ? o.combat.cost(inst as CardInst) : up && d.costUp !== undefined ? d.costUp : d.cost;
   const owner = d.owner;
   let text = d.text(up) + (d.exhaust && !(up && d.exhaustUp === false) && !/Exhaust/.test(d.text(up)) ? ' Exhaust.' : '');
+  text = heroText(text);
   if (o.combat && inst.uid && d.type === 'attack') text = liveDamage(text, o.combat, inst as CardInst);
   const typeLabel = d.type[0].toUpperCase() + d.type.slice(1) + (d.atk ? ` · ${d.atk === 'jump' ? 'Jump' : d.atk === 'hammer' ? 'Hammer' : d.atk === 'ground' ? 'Ground' : 'Ranged'}` : '');
   const el = h(
@@ -100,7 +102,7 @@ export function cardEl(inst: Pick<CardInst, 'id' | 'up'> & Partial<CardInst>, o:
     h('div.card-art', null, iconFit(d.icon, 52)),
     h('div.card-type', null, typeLabel),
     h('div.card-text', null, h('div', { html: markup(text) })),
-    owner !== 'mario' && owner !== 'none' ? h('div.card-owner', null, icon(PARTNERS[owner].icon, 1)) : null,
+    owner !== 'mario' && owner !== 'none' ? h('div.card-owner', null, icon(PARTNERS[owner].icon, 1)) : d.set && d.set !== 'luigi' ? h('div.card-owner', null, icon(HEROES[d.set].icon, 1)) : null,
     d.combo ? h('div.card-combo', { class: o.combat?.comboActive(d.combo) ? 'on' : '' }, '+', icon(PARTNERS[d.combo].icon, 1)) : null,
     o.price !== undefined ? h('div.price', null, icon('coin', 1), String(o.price)) : null,
   );
@@ -156,12 +158,12 @@ export function statusRow(u: Unit): HTMLDivElement {
 
 export function badgeTip(id: string): string {
   const b = BADGES[id];
-  return `<b>${esc(b.name)}</b> <i class="rar">${b.rarity}</i><br>${esc(b.desc)}`;
+  return `<b>${esc(b.name)}</b> <i class="rar">${b.rarity}</i><br>${esc(heroText(b.desc))}`;
 }
 
 export function itemTip(id: string): string {
   const d = ITEMS[id];
-  return `<b>${esc(d.name)}</b><br>${esc(d.desc)}`;
+  return `<b>${esc(d.name)}</b><br>${esc(heroText(d.desc))}`;
 }
 
 // ---------- modal ----------

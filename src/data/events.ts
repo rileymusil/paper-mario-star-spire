@@ -1,5 +1,6 @@
 import type { Reward, RunState } from '../engine/types';
 import type { Rng } from '../engine/rng';
+import { heroOf } from './heroes';
 import { addBadge, addCard, addItem, canUpgrade, healTeam, rollBadge, rollCards, rollItem, upgradeCard } from '../engine/run';
 
 export interface EventOption {
@@ -100,6 +101,7 @@ export const EVENT_LIST: EventDef[] = [
   },
   {
     id: 'luigi', title: "Luigi's Training", npc: 'luigi', acts: [1, 2],
+    when: (run) => heroOf(run).id !== 'luigi',
     pages: {
       start: () => ({
         text: 'Luigi is practicing jumps behind a pipe. "Bro! Want to train with me? I\'ve been reading about new moves!"',
@@ -129,6 +131,7 @@ export const EVENT_LIST: EventDef[] = [
   },
   {
     id: 'peach', title: "Peach's Secret Kitchen", npc: 'peach', acts: [2, 3],
+    when: (run) => heroOf(run).id !== 'peach',
     pages: {
       start: (run) => ({
         text: 'Princess Peach has snuck away from her guards to bake. "Mario! I made too much. Please take some!"',
@@ -470,7 +473,7 @@ export const EVENT_LIST: EventDef[] = [
   },
   {
     id: 'kammy', title: "Kammy's Brew", npc: 'kammy', acts: [2, 3],
-    when: (run) => !run.badges.includes('fpPlus'),
+    when: (run) => !run.badges.includes('fpPlus') && heroOf(run).id !== 'bowser' && !run.partners.some((p) => p.id === 'kammy'),
     pages: {
       start: () => ({
         text: 'Kammy Koopa swoops down on her broom, stirring a bubbling pot. "Mario! How about a little taste? It\'s perfectly safe. Mostly. Hee hee!"',

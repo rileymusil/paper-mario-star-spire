@@ -5,6 +5,8 @@ export interface CardDef {
   id: string;
   name: string;
   owner: Owner;
+  /** hero card set for owner 'mario' cards: undefined = Mario and Luigi's shared pool */
+  set?: 'luigi' | 'peach' | 'bowser';
   /** combo partner: the card gets a bonus while this partner is fielded and conscious */
   combo?: PartnerId;
   type: CardType;

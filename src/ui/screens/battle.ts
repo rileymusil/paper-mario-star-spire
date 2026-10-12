@@ -8,6 +8,7 @@ import { h, sleep } from '../dom';
 import { button, cardEl, hideTip, hpBar, showTip, statusRow, tip } from '../components';
 import { SpriteView, icon, iconFit } from '../sprite';
 import { stage } from '../stage';
+import { heroText } from '../../data/heroes';
 import { sfx } from '../sfx';
 
 interface UnitView {
@@ -109,7 +110,7 @@ export class BattleView {
   private addView(u: Unit): UnitView {
     const L = LAYOUTS[stage().orient];
     const def = u.side === 'enemy' ? ENEMIES[u.id] : null;
-    const size = def?.size ?? (u.side === 'ally' && u.uid !== 'mario' ? PARTNERS[u.id as keyof typeof PARTNERS]?.size : undefined) ?? 1;
+    const size = def?.size ?? (u.uid === 'mario' ? this.c.hero.size : u.side === 'ally' ? PARTNERS[u.id as keyof typeof PARTNERS]?.size : undefined) ?? 1;
     const sprite = new SpriteView(u.sprite, L.unitScale * size, u.side === 'ally');
     if (def?.tint) sprite.inner.style.filter = def.tint;
     // Keep big bosses below the HUD so their intent stays visible.
@@ -133,7 +134,9 @@ export class BattleView {
   /** Place units at their home spots. */
   private layout(animate: boolean) {
     const L = LAYOUTS[stage().orient];
-    this.c.allies.forEach((u, i) => this.setHome(this.views.get(u.uid)!, L.allyX[i], L.ground + L.allyY[i], animate));
+    // A wide hero (Bowser) steps forward and his partner steps back so they don't overlap.
+    const spread = Math.max(0, (this.views.get('mario')?.sprite.width ?? 0) / 2 - 70 * L.unitScale);
+    this.c.allies.forEach((u, i) => this.setHome(this.views.get(u.uid)!, L.allyX[i] + (i === 0 ? spread : -spread), L.ground + L.allyY[i], animate));
     // A move that summons several foes adds them all to the combat before their
     // summon events play, so skip any that don't have a view yet.
     const shown = this.c.enemies.filter((e) => {
@@ -292,7 +295,7 @@ export class BattleView {
   private targetIcon(t: string): Node {
     if (t === 'all') return h('span.tgt-all', null, 'ALL');
     const u = this.c.unit(t);
-    if (!u || u.uid === 'mario') return iconFit('p_mario', 22);
+    if (!u || u.uid === 'mario') return iconFit(this.c.hero.icon, 22);
     return iconFit(PARTNERS[u.id as keyof typeof PARTNERS]?.icon ?? 'p_mario', 22);
   }
 
@@ -307,7 +310,7 @@ export class BattleView {
     if (u.side === 'ally') {
       const p = u.uid === 'mario' ? null : PARTNERS[u.id as keyof typeof PARTNERS];
       const rank = p ? (this.run.partners.find((x) => x.id === p.id)?.rank ?? 0) : 0;
-      return `<b>${u.name}</b><br>HP ${Math.max(0, u.hp)}/${u.maxHp}${u.block ? ` · Block ${u.block}` : ''}${p ? `<br>${p.blurb}<br><b>${p.passive.name}:</b> ${p.passive.desc(p.passive.values[rank])}${u.dead ? ' (inactive)' : ''}` : ''}${u.dead ? "<br><i>KO'd: cards can't be played</i>" : ''}`;
+      return `<b>${u.name}</b><br>HP ${Math.max(0, u.hp)}/${u.maxHp}${u.block ? ` · Block ${u.block}` : ''}${p ? heroText(`<br>${p.blurb}<br><b>${p.passive.name}:</b> ${p.passive.desc(p.passive.values[rank])}${u.dead ? ' (inactive)' : ''}`) : `<br><b>${this.c.hero.passive.name}:</b> ${this.c.hero.passive.desc}`}${u.dead ? "<br><i>KO'd: cards can't be played</i>" : ''}`;
     }
     const def = ENEMIES[u.id];
     const traits = u.traits.filter((t) => ['flying', 'spiky', 'shelled', 'boss'].includes(t));
@@ -688,7 +691,7 @@ export class BattleView {
       this.banner('Victory!', 'win');
     } else {
       sfx.defeat();
-      this.banner('Mario was defeated...', 'lose');
+      this.banner(`${this.c.hero.name} was defeated...`, 'lose');
     }
     await sleep(1700);
     if (this.dead) return;

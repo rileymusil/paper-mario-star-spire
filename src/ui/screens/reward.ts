@@ -1,9 +1,10 @@
 import type { App } from '../app';
 import type { Reward, RunState, ScreenState } from '../../engine/types';
-import { advanceAct, completeNode, recruit } from '../../engine/run';
+import { advanceAct, completeNode, partySlots, recruit } from '../../engine/run';
 import { ACTS } from '../../data/acts';
 import { BADGES, PARTNERS } from '../../data/registry';
 import { passiveText } from '../../data/partners';
+import { heroText } from '../../data/heroes';
 import { h } from '../dom';
 import { badgeTip, button, cardEl, modal, tip } from '../components';
 import { iconFit, portrait } from '../sprite';
@@ -51,7 +52,7 @@ export function renderBossReward(app: App, run: RunState, s: Extract<ScreenState
     } else if (ch.kind === 'rankup') {
       body = h('div.bchoice-body', null, iconFit('i_superblock', 70), h('b', null, 'Rank up a partner'), h('small', null, 'Free rank-up, no Super Block needed.'));
     } else {
-      body = tip(h('div.bchoice-body', null, iconFit(BADGES[ch.id].icon, 64), h('b', null, BADGES[ch.id].name), h('small', null, BADGES[ch.id].desc)), () => badgeTip(ch.id));
+      body = tip(h('div.bchoice-body', null, iconFit(BADGES[ch.id].icon, 64), h('b', null, BADGES[ch.id].name), h('small', null, heroText(BADGES[ch.id].desc))), () => badgeTip(ch.id));
     }
     return h(
       'div.bchoice',
@@ -67,7 +68,7 @@ export function renderBossReward(app: App, run: RunState, s: Extract<ScreenState
           if (ch.kind === 'partner') {
             recruit(run, ch.id);
             done();
-            if (run.partners.filter((p) => p.field).length >= 2 && !run.partners.find((p) => p.id === ch.id)!.field) partyModal(app, run);
+            if (run.partners.filter((p) => p.field).length >= partySlots(run) && !run.partners.find((p) => p.id === ch.id)!.field) partyModal(app, run);
           } else if (ch.kind === 'rankup') {
             rankUpModal(app, run, true, () => (s.picked = i));
           } else {

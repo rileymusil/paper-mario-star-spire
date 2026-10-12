@@ -1,4 +1,6 @@
 export type PartnerId = 'goombario' | 'kooper' | 'bombette' | 'parakarry' | 'bow' | 'watt' | 'sushie' | 'lakilester' | 'kolorado' | 'kammy';
+export type HeroId = 'mario' | 'luigi' | 'peach' | 'bowser';
+/** 'mario' means the run's hero, whoever that is */
 export type Owner = 'mario' | PartnerId | 'none';
 export type Side = 'ally' | 'enemy';
 
@@ -141,6 +143,8 @@ export interface RunState {
   /** event ids already seen this run */
   seenEvents: string[];
   removeCost: number;
+  /** playable hero (saves from before heroes are Mario) */
+  hero?: HeroId;
   /** Star Level (difficulty) */
   level: number;
   /** Hard mode, from saves made before Star Levels */

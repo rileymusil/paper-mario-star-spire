@@ -1,4 +1,4 @@
-import type { BossChoice, CardInst, PartnerId, Reward, RunState, ShopStock } from './types';
+import type { BossChoice, CardInst, HeroId, PartnerId, Reward, RunState, ShopStock } from './types';
 import { Rng } from './rng';
 import { generateMap } from './map';
 import { Combat, type CombatKind } from './combat';
@@ -9,10 +9,10 @@ import { ALL_PARTNERS, RANK_HP } from '../data/partners';
 import { BADGES, CARDS, PARTNERS } from '../data/registry';
 import { EVENT_LIST, EVENTS } from '../data/events';
 import { starLevel } from '../data/levels';
+import { HEROES, badgeFitsHero, cardFitsHero, heroOf } from '../data/heroes';
 
 export const RUN_VERSION = 1;
 export const MARIO_HP = 45;
-export const START_DECK = ['jump', 'jump', 'jump', 'hammer', 'hammer', 'guard', 'guard', 'guard', 'guard'];
 const STREAMS = ['map', 'combat', 'rewards', 'events', 'shop', 'enc'];
 
 // ---------- rng ----------
@@ -27,7 +27,8 @@ export function withRng<T>(run: RunState, stream: string, fn: (r: Rng) => T): T 
 
 // ---------- creation ----------
 
-export function newRun(opts: { seed?: string; starter: PartnerId; level?: number }): RunState {
+export function newRun(opts: { seed?: string; starter: PartnerId; level?: number; hero?: HeroId }): RunState {
+  const hero = HEROES[opts.hero ?? 'mario'];
   const seed = opts.seed ?? Math.random().toString(36).slice(2, 10).toUpperCase();
   const rng: Record<string, number> = {};
   for (const s of STREAMS) rng[s] = Rng.fromSeed(`${seed}:${s}`).state;
@@ -40,7 +41,7 @@ export function newRun(opts: { seed?: string; starter: PartnerId; level?: number
     pos: null,
     current: null,
     visited: [],
-    mario: { hp: MARIO_HP, maxHp: MARIO_HP },
+    mario: { hp: hero.hp, maxHp: hero.hp },
     partners: [],
     deck: [],
     coins: 60,
@@ -52,6 +53,7 @@ export function newRun(opts: { seed?: string; starter: PartnerId; level?: number
     bosses: [],
     seenEvents: [],
     removeCost: 75,
+    hero: hero.id,
     level: opts.level ?? 0,
     nextUid: 1,
     stats: { battles: 0, elites: 0, bosses: 0, damageDealt: 0, nice: 0, coinsEarned: 0 },
@@ -60,11 +62,13 @@ export function newRun(opts: { seed?: string; starter: PartnerId; level?: number
     actFights: 0,
     lastEncounter: '',
   };
-  for (const id of START_DECK) addCard(run, id);
-  if (run.level >= 3) run.mario.hp = run.mario.maxHp = MARIO_HP - 5;
+  for (const id of hero.deck) addCard(run, id);
+  if (run.level >= 3) run.mario.hp = run.mario.maxHp = hero.hp - 5;
   if (run.level >= 7) addCard(run, 'haunted');
   run.bosses = withRng(run, 'map', (r) => ACTS.map((a) => r.pick(a.bosses)));
-  recruit(run, opts.starter);
+  // Bowser's run ends against the hero himself.
+  if (hero.id === 'bowser') run.bosses[ACTS.length - 1] = 'mario_boss';
+  recruit(run, hero.starter ?? opts.starter);
   startAct(run, 1);
   return run;
 }
@@ -129,7 +133,8 @@ export function canRemove(_run: RunState, inst: CardInst): boolean {
 /** Card ids that can appear in rewards for the current team. */
 export function cardPool(run: RunState, rarity: string): string[] {
   const owners = new Set<string>(['mario', ...run.partners.filter((p) => p.field).map((p) => p.id)]);
-  return CARD_LIST.filter((c) => owners.has(c.owner) && (!c.combo || owners.has(c.combo)) && c.rarity === rarity).map((c) => c.id);
+  const hero = heroOf(run);
+  return CARD_LIST.filter((c) => owners.has(c.owner) && cardFitsHero(c, hero) && (!c.combo || owners.has(c.combo)) && c.rarity === rarity).map((c) => c.id);
 }
 
 /** A reward card id, with '+' suffix when pre-upgraded. */
@@ -154,7 +159,8 @@ export function transformCard(run: RunState, uid: string, r: Rng) {
   const inst = run.deck.find((c) => c.uid === uid);
   if (!inst) return;
   const owner = CARDS[inst.id].owner;
-  const pool = CARD_LIST.filter((c) => c.owner === (owner === 'none' ? 'mario' : owner) && c.id !== inst.id && ['common', 'uncommon', 'rare'].includes(c.rarity));
+  const hero = heroOf(run);
+  const pool = CARD_LIST.filter((c) => c.owner === (owner === 'none' ? 'mario' : owner) && cardFitsHero(c, hero) && c.id !== inst.id && ['common', 'uncommon', 'rare'].includes(c.rarity));
   if (pool.length) inst.id = r.pick(pool).id;
 }
 
@@ -181,10 +187,10 @@ export function addBadge(run: RunState, id: string) {
 export function rollBadge(run: RunState, r: Rng, weights: [string, number][] = [['common', 55], ['uncommon', 33], ['rare', 12]]): string | null {
   for (let i = 0; i < 20; i++) {
     const rarity = r.weighted(weights);
-    const pool = BADGE_LIST.filter((b) => b.rarity === rarity && !run.badges.includes(b.id));
+    const pool = BADGE_LIST.filter((b) => b.rarity === rarity && !run.badges.includes(b.id) && badgeFitsHero(b.id, heroOf(run)));
     if (pool.length) return r.pick(pool).id;
   }
-  const any = BADGE_LIST.filter((b) => b.rarity !== 'boss' && !run.badges.includes(b.id));
+  const any = BADGE_LIST.filter((b) => b.rarity !== 'boss' && !run.badges.includes(b.id) && badgeFitsHero(b.id, heroOf(run)));
   return any.length ? r.pick(any).id : null;
 }
 
@@ -193,15 +199,20 @@ export function rollBadge(run: RunState, r: Rng, weights: [string, number][] = [
 export function recruit(run: RunState, id: PartnerId) {
   if (run.partners.some((p) => p.id === id)) return;
   const def = PARTNERS[id];
-  const field = run.partners.filter((p) => p.field).length < 2;
+  const field = run.partners.filter((p) => p.field).length < partySlots(run);
   run.partners.push({ id, hp: def.hp, maxHp: def.hp, rank: 0, field });
   for (const c of def.starters) addCard(run, c);
+}
+
+/** How many partners can fight at once (Bowser brings just one). */
+export function partySlots(run: RunState): number {
+  return heroOf(run).partnerSlots;
 }
 
 export function setField(run: RunState, id: PartnerId, field: boolean): boolean {
   const p = run.partners.find((p) => p.id === id);
   if (!p) return false;
-  if (field && !p.field && run.partners.filter((x) => x.field).length >= 2) return false;
+  if (field && !p.field && run.partners.filter((x) => x.field).length >= partySlots(run)) return false;
   p.field = field;
   return true;
 }
@@ -444,7 +455,7 @@ export function makeShop(run: RunState): ShopStock {
       const owner = i < 3 || !field.length ? 'mario' : field[i % field.length];
       for (let t = 0; t < 20; t++) {
         const rarity = r.weighted(weights);
-        const pool = CARD_LIST.filter((c) => c.owner === owner && c.rarity === rarity && !cards.some((x) => x.id === c.id));
+        const pool = CARD_LIST.filter((c) => c.owner === owner && cardFitsHero(c, heroOf(run)) && (!c.combo || field.includes(c.combo)) && c.rarity === rarity && !cards.some((x) => x.id === c.id));
         if (!pool.length) continue;
         cards.push({ id: r.pick(pool).id, price: price(rarity), sold: false });
         break;

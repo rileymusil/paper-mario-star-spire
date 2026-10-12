@@ -2,7 +2,7 @@ import type { App } from '../app';
 import type { RunState, ScreenState } from '../../engine/types';
 import { PARTNERS } from '../../data/registry';
 import { passiveText } from '../../data/partners';
-import { completeNode, recruit } from '../../engine/run';
+import { completeNode, partySlots, recruit } from '../../engine/run';
 import { h } from '../dom';
 import { button, cardEl } from '../components';
 import { iconFit, portrait } from '../sprite';
@@ -55,7 +55,7 @@ export function renderPartnerNode(app: App, run: RunState, s: Extract<ScreenStat
       h('div.cardrow.mini', null, ...p.starters.map((c) => cardEl({ id: c, up: false }))),
     );
   });
-  const full = run.partners.filter((p) => p.field).length >= 2;
+  const full = run.partners.filter((p) => p.field).length >= partySlots(run);
   return h(
     'div.partner-screen',
     null,

@@ -3,7 +3,8 @@ import sprites from '../src/generated/sprites.json';
 import { Combat } from '../src/engine/combat';
 import { Rng } from '../src/engine/rng';
 import { generateMap, reachable } from '../src/engine/map';
-import { battleReward, cardPool, newRun, restHeal } from '../src/engine/run';
+import { battleReward, cardPool, newRun, recruit, restHeal, rollBadge, withRng } from '../src/engine/run';
+import { HERO_LIST } from '../src/data/heroes';
 import { DEFAULT_META, unlockForAct } from '../src/engine/save';
 import { MAX_LEVEL, starLevel } from '../src/data/levels';
 import type { RunState } from '../src/engine/types';
@@ -539,5 +540,70 @@ describe('full runs', () => {
       results.push(`${r.result}@act${r.act}`);
     }
     console.log(results.join(' '));
+  });
+
+  it('every hero can play whole runs', () => {
+    for (const hero of HERO_LIST) {
+      for (let s = 0; s < 6; s++) {
+        const run = newRun({ seed: `H${hero.id}${s}`, starter: 'goombario', hero: hero.id });
+        const r = autoRun(run, s, 0.8);
+        expect(r.result, `${hero.id} seed ${s}`).not.toBe('stuck');
+      }
+    }
+  });
+});
+
+describe('heroes', () => {
+  it('start with their own deck, HP and partner rules', () => {
+    const bowser = newRun({ seed: 'B', starter: 'goombario', hero: 'bowser' });
+    expect(bowser.partners.map((p) => p.id)).toEqual(['kammy']);
+    expect(bowser.mario.maxHp).toBe(55);
+    expect(bowser.bosses[2]).toBe('mario_boss');
+    recruit(bowser, 'kooper');
+    expect(bowser.partners.find((p) => p.id === 'kooper')!.field).toBe(false); // only 1 slot
+    const peach = newRun({ seed: 'P', starter: 'kooper', hero: 'peach' });
+    expect(peach.deck.some((c) => c.id === 'jump')).toBe(false);
+  });
+
+  it('only find cards and badges that fit them', () => {
+    for (const hero of HERO_LIST) {
+      const run = newRun({ seed: 'C', starter: 'kooper', hero: hero.id });
+      for (const r of ['common', 'uncommon', 'rare']) {
+        const pool = cardPool(run, r).map((id) => CARDS[id]).filter((c) => c.owner === 'mario');
+        expect(pool.length, `${hero.id} ${r}`).toBeGreaterThan(0);
+        for (const c of pool) expect(hero.sets, `${hero.id} got ${c.id}`).toContain(c.set ?? 'plumber');
+      }
+    }
+    const peach = newRun({ seed: 'C', starter: 'kooper', hero: 'peach' });
+    for (let i = 0; i < 40; i++) expect(withRng(peach, 'rewards', (r) => rollBadge(peach, r))).not.toBe('powerJump');
+  });
+
+  it('passives: Luigi gets nervous, Peach raises her parasol, Bowser spikes attackers', () => {
+    const luigi = new Combat(newRun({ seed: 'L', starter: 'kooper', hero: 'luigi' }), ['goomba'], 'normal', new Rng(1));
+    luigi.begin();
+    const g = luigi.enemies[0];
+    expect(luigi.calc(luigi.mario, g, 5, { kind: 'jump' })).toBe(7);
+    expect(luigi.calc(luigi.mario, g, 5, { kind: 'hammer' })).toBe(3);
+    luigi.hit(g, luigi.mario, 5, {}, true);
+    expect(luigi.mario.st.strength).toBe(1);
+    const peach = new Combat(newRun({ seed: 'P', starter: 'kooper', hero: 'peach' }), ['goomba'], 'normal', new Rng(1));
+    peach.begin();
+    expect(peach.mario.block).toBe(2);
+    const bowser = new Combat(newRun({ seed: 'B', starter: 'kooper', hero: 'bowser' }), ['goomba'], 'normal', new Rng(1));
+    bowser.begin();
+    const b = bowser.enemies[0];
+    const hp = b.hp;
+    bowser.hit(b, bowser.mario, 5, {}, true);
+    expect(b.hp).toBe(hp - 2);
+  });
+
+  it("Mario fights back as Bowser's final boss", () => {
+    const run = newRun({ seed: 'F', starter: 'kooper', hero: 'bowser' });
+    run.mario.hp = run.mario.maxHp = 999;
+    const c = new Combat(run, ['luigi_boss', 'mario_boss'], 'boss', new Rng(3));
+    c.begin();
+    autoCombat(c, new Rng(3), 0.8);
+    expect(c.isOver()).toBe(true);
+    expect(c.result).toBe('win');
   });
 });

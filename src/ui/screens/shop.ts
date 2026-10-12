@@ -8,6 +8,7 @@ import { badgeTip, button, cardEl, coinLabel, itemTip, tip } from '../components
 import { iconFit } from '../sprite';
 import { sfx } from '../sfx';
 import { npcBox, pickCards } from './common';
+import { heroText } from '../../data/heroes';
 
 const LINES = ['Welcome, welcome! Take a look!', 'Best prices in the Mushroom Kingdom!', 'Coins for cards, cards for coins!'];
 
@@ -97,7 +98,7 @@ export function renderShop(app: App, run: RunState, s: Extract<ScreenState, { ki
         h('div.si-name', null, 'Card removal'),
         st.removeUsed ? h('div.soldtag', null, 'SOLD') : priceTag(run.removeCost),
       ),
-      () => "Remove one of Mario's cards from your deck. Partner cards can't be removed.",
+      () => heroText("Remove one of Mario's cards from your deck. Partner cards can't be removed."),
     ),
   ];
   const keeper = ACTS[run.act - 1].shopkeeper;
